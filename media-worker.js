@@ -19,16 +19,26 @@
 //    resulting public base URL for config.js later (e.g.
 //    https://media.agrabanart.com or https://pub-xxxx.r2.dev)
 // 4. Edit wrangler.toml in this folder: set your bucket name and account ID
-// 5. Set the two secrets this Worker needs (run these in this folder):
+// 5. Set the three secrets this Worker needs (run these in this folder):
 //      wrangler secret put SUPABASE_URL
+//      wrangler secret put SUPABASE_ANON_KEY
 //      wrangler secret put ADMIN_EMAIL
-//    (SUPABASE_URL is your project's URL, e.g. https://xxxx.supabase.co —
+//    (SUPABASE_URL and SUPABASE_ANON_KEY are the same values from
+//    Supabase's Settings -> API page that you already put in config.js —
 //    ADMIN_EMAIL is the email address of your admin login, used as an
 //    extra sanity check alongside the admins table in Supabase)
 // 6. Deploy: wrangler deploy
 // 7. Copy the deployed Worker URL (looks like
 //    https://agrabanart-media-worker.your-subdomain.workers.dev) into
 //    config.js as MEDIA_WORKER_URL
+//
+// IF YOU DEPLOYED THIS WORKER BEFORE 2026-08-06: there was a bug where the
+// apikey header sent to Supabase reused your own login token instead of
+// the project's anon key, causing every upload to fail with 401
+// Unauthorized. If you're updating an existing deployment, just add the
+// new secret and redeploy:
+//   wrangler secret put SUPABASE_ANON_KEY
+//   wrangler deploy
 // ============================================================================
 
 export default {
@@ -61,7 +71,7 @@ export default {
     const userCheck = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
       headers: {
         Authorization: `Bearer ${token}`,
-        apikey: token, // Supabase accepts the user's own access token here
+        apikey: env.SUPABASE_ANON_KEY, // COMMENT: this was the bug — must be the project's anon key, not the user's own token
       },
     });
 
