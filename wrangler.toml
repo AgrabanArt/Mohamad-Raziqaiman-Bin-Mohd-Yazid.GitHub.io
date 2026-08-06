@@ -1,0 +1,7 @@
+name = "agrabanart-media-worker"
+main = "media-worker.js"
+compatibility_date = "2026-08-06"
+
+[[r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "agrabanart-website-depository"

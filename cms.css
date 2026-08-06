@@ -1,0 +1,353 @@
+/* ==========================================================================
+   AgrabanArt CMS — dashboard styles
+   Reuses the color/type variables from style.css (loaded alongside this
+   file) so the CMS visually matches the main site, but with a functional
+   admin layout instead of the marketing-site layout.
+   ========================================================================== */
+
+body.cms-body {
+  display: block;
+  min-height: 100vh;
+}
+
+/* ---------- Login screen ---------- */
+
+.login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 2.5rem;
+  text-align: center;
+}
+
+.login-card h1 {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  margin: 0.5rem 0 1.5rem;
+}
+
+.form-field {
+  text-align: left;
+  margin-bottom: 1rem;
+}
+
+.form-field label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.4rem;
+}
+
+.form-field input[type="text"],
+.form-field input[type="email"],
+.form-field input[type="password"],
+.form-field input[type="number"],
+.form-field input[type="url"],
+.form-field textarea,
+.form-field select {
+  width: 100%;
+  background: var(--black);
+  border: 1px solid var(--border);
+  color: var(--white);
+  padding: 0.7rem 0.9rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  border-radius: 2px;
+}
+
+.form-field textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.form-field input:focus,
+.form-field textarea:focus,
+.form-field select:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+.form-error {
+  color: #e0748c;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  margin-top: 1rem;
+  min-height: 1em;
+}
+
+/* ---------- Dashboard layout ---------- */
+
+.cms-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.cms-sidebar {
+  width: 220px;
+  flex: 0 0 auto;
+  background: var(--black-soft);
+  border-right: 1px solid var(--border);
+  padding: 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.cms-sidebar .brand {
+  padding: 0 1.5rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.cms-nav-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+  padding: 0.85rem 1.5rem;
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.cms-nav-btn:hover {
+  color: var(--white);
+  background: rgba(201, 162, 75, 0.05);
+}
+
+.cms-nav-btn.is-active {
+  color: var(--gold-bright);
+  border-left-color: var(--gold);
+  background: rgba(201, 162, 75, 0.08);
+}
+
+.cms-nav-btn.logout {
+  margin-top: auto;
+  color: var(--muted);
+}
+
+.cms-main {
+  flex: 1;
+  min-width: 0;
+  padding: 2.5rem 3rem;
+  max-width: 960px;
+}
+
+.cms-panel {
+  display: none;
+}
+
+.cms-panel.is-active {
+  display: block;
+}
+
+.cms-panel h2 {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  letter-spacing: 0.02em;
+  margin: 0 0 0.5rem;
+}
+
+.cms-subtabs {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1.5rem 0 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.cms-subtab-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.cms-subtab-btn.is-active {
+  color: var(--gold-bright);
+  border-bottom-color: var(--gold);
+}
+
+.cms-subpanel {
+  display: none;
+}
+
+.cms-subpanel.is-active {
+  display: block;
+}
+
+.cms-limit-note {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--gold);
+  margin-bottom: 1rem;
+}
+
+/* ---------- Item cards (list rows) ---------- */
+
+.cms-item-card {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  border: 1px solid var(--border);
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.cms-item-thumb {
+  width: 56px;
+  height: 56px;
+  flex: 0 0 auto;
+  object-fit: cover;
+  background: var(--black);
+  border: 1px solid var(--border);
+}
+
+.cms-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cms-item-info h4 {
+  margin: 0 0 0.2rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.cms-item-info p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cms-item-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+}
+
+.cms-btn {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--white);
+  cursor: pointer;
+  border-radius: 2px;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.cms-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold-bright);
+}
+
+.cms-btn.danger:hover {
+  border-color: #e0748c;
+  color: #e0748c;
+}
+
+.cms-btn.primary {
+  border-color: var(--gold);
+  color: var(--black);
+  background: var(--gold);
+}
+
+.cms-btn.primary:hover {
+  background: var(--gold-bright);
+  color: var(--black);
+}
+
+.cms-form {
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+  background: var(--surface);
+}
+
+.cms-form h3 {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  margin: 0 0 1rem;
+}
+
+.cms-form-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.cms-status {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  margin-top: 0.75rem;
+  min-height: 1em;
+}
+
+.cms-status.success { color: var(--gold-bright); }
+.cms-status.error { color: #e0748c; }
+
+.cms-empty-note {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 720px) {
+  .cms-layout {
+    flex-direction: column;
+  }
+  .cms-sidebar {
+    width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 0.5rem;
+  }
+  .cms-sidebar .brand {
+    display: none;
+  }
+  .cms-nav-btn {
+    border-left: none;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+  }
+  .cms-nav-btn.is-active {
+    border-left-color: transparent;
+    border-bottom-color: var(--gold);
+  }
+  .cms-nav-btn.logout {
+    margin-top: 0;
+  }
+  .cms-main {
+    padding: 1.5rem;
+  }
+}

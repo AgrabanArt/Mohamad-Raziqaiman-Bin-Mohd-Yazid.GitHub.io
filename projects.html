@@ -71,6 +71,18 @@
 </head>
 <body>
 
+  <!--
+    ============================================================
+    COMMENT: This page now pulls its content live from Supabase via
+    site-data.js — the gallery-grid divs below start out EMPTY in the
+    actual page source and get filled in by JavaScript after fetching.
+    If you haven't finished setting up config.js yet (see README.md),
+    you'll just see "Nothing added yet" placeholders, which is expected.
+    You no longer need to hand-edit this file to add projects — do that
+    from cms.html instead.
+    ============================================================
+  -->
+
   <nav class="site-nav">
     <a href="index.html" class="brand">AGRABAN<span>ART</span></a>
     <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
@@ -104,42 +116,9 @@
         <h2>2D Illustrations</h2>
       </div>
 
-      <!--
-        COMMENT: Each tile below links out to a detail page (project-template.html
-        for now). To add a real project:
-        1. Duplicate project-template.html, rename it (e.g. project-2d-01.html),
-           and fill in its content.
-        2. Point this tile's href at your new file.
-        3. Replace the .tile-placeholder-label div with:
-           <img src="path/to/thumbnail.jpg" alt="Piece title">
-        4. Edit the .tile-title and <p> text inside .tile-caption to a short
-           description shown on hover.
-        Add or remove <a class="tile-link"> blocks as needed — the grid wraps
-        in rows of 3 (2 on mobile).
-      -->
-      <div class="gallery-grid">
-        <a href="project-template.html" class="tile-link">
-          <img src="media\img\leya_gallery_tile.png" alt="Leya" class="tile-placeholder-label">
-          <div class="tile-caption">
-            <p class="tile-title">Leya</p>
-            <p>Illustration of my oc.</p>
-          </div>
-        </a>
-        <a href="project-template.html" class="tile-link">
-          <img src="media\img\terribletornado_gallery_tile.png" alt="Terrible Tornado fanart" class="tile-placeholder-label">
-          <div class="tile-caption">
-            <p class="tile-title">Terrible Tornado fanart</p>
-            <p>My take on Tatsumaki from One Punch Man</p>
-          </div>
-        </a>
-        <a href="project-template.html" class="tile-link">
-          <div class="tile-placeholder-label">2D PIECE 03<br>— insert image —</div>
-          <div class="tile-caption">
-            <p class="tile-title">Project Title</p>
-            <p>Short one- or two-line description of the piece goes here.</p>
-          </div>
-        </a>
-        
+      <!-- Filled in by site-data.js — up to 6 items, managed from the CMS -->
+      <div class="gallery-grid" id="gallery-2d">
+        <p style="color: var(--muted); font-family: var(--font-mono); font-size: 0.85rem;">Nothing added yet — add pieces from the CMS.</p>
       </div>
     </div>
   </section>
@@ -154,15 +133,7 @@
         <h2>3D Modelling</h2>
       </div>
 
-      <!--
-        COMMENT: Interactive 3D model carousel.
-        To add, remove, or reorder models: open script.js, find the block
-        labeled "MODEL CAROUSEL DATA" near the top, and edit the `models`
-        array there. Each entry needs a title and a path to a .glb/.gltf file,
-        e.g. { title: "Piece Name", src: "models/piece-01.glb" }.
-        Leave src as an empty string "" to keep showing this placeholder for
-        that slot. The arrows below cycle through whatever is in the array.
-      -->
+      <!-- Interactive 3D model carousel — data comes from site-data.js -->
       <div class="carousel">
         <button class="carousel-arrow" id="model-prev" aria-label="Previous model">&#10094;</button>
         <div class="model-slot carousel-slot" id="model-slot">
@@ -173,31 +144,11 @@
         </div>
         <button class="carousel-arrow" id="model-next" aria-label="Next model">&#10095;</button>
       </div>
-      <p class="carousel-caption" id="model-caption">Model 1 of 1</p>
+      <p class="carousel-caption" id="model-caption">Nothing added yet</p>
 
-      <!-- COMMENT: still renders — same clickable tile pattern as the 2D section above -->
-      <div class="gallery-grid">
-        <a href="project-template.html" class="tile-link">
-          <div class="tile-placeholder-label">3D RENDER 01<br>— insert image —</div>
-          <div class="tile-caption">
-            <p class="tile-title">Project Title</p>
-            <p>Short one- or two-line description of the piece goes here.</p>
-          </div>
-        </a>
-        <a href="project-template.html" class="tile-link">
-          <div class="tile-placeholder-label">3D RENDER 02<br>— insert image —</div>
-          <div class="tile-caption">
-            <p class="tile-title">Project Title</p>
-            <p>Short one- or two-line description of the piece goes here.</p>
-          </div>
-        </a>
-        <a href="project-template.html" class="tile-link">
-          <div class="tile-placeholder-label">3D RENDER 03<br>— insert image —</div>
-          <div class="tile-caption">
-            <p class="tile-title">Project Title</p>
-            <p>Short one- or two-line description of the piece goes here.</p>
-          </div>
-        </a>
+      <!-- Still-render gallery — filled in by site-data.js -->
+      <div class="gallery-grid" id="gallery-3d">
+        <p style="color: var(--muted); font-family: var(--font-mono); font-size: 0.85rem;">Nothing added yet — add pieces from the CMS.</p>
       </div>
     </div>
   </section>
@@ -212,29 +163,18 @@
         <h2>Animation Showreel</h2>
       </div>
 
-      <!--
-        COMMENT: Animation showreel carousel.
-        To add, remove, or reorder videos: open script.js, find the block
-        labeled "VIDEO CAROUSEL DATA" near the top, and edit the `videos`
-        array there. Each entry needs a title and a path to a video file,
-        e.g. { title: "Reel Name", src: "media/reel-01.mp4" }.
-        Leave src as an empty string "" to keep showing this placeholder for
-        that slot. The arrows below cycle through whatever is in the array.
-        You can also point an entry's src at a YouTube/Vimeo embed URL if
-        you'd rather link out than host the file directly — ask if you'd
-        like that wired up instead.
-      -->
+      <!-- Video/YouTube carousel — data comes from site-data.js -->
       <div class="carousel">
         <button class="carousel-arrow" id="video-prev" aria-label="Previous video">&#10094;</button>
         <div class="video-slot carousel-slot" id="video-slot">
-          <video id="showreel-video" controls style="width:100%; height:100%; display:none;"></video>
+          <div id="video-media-wrap" style="width:100%; height:100%; display:none;"></div>
           <div class="carousel-placeholder-text" id="video-placeholder-text">
-            SHOWREEL VIDEO<br>— insert video file or embed here —
+            SHOWREEL VIDEO<br>— add a YouTube link from the CMS —
           </div>
         </div>
         <button class="carousel-arrow" id="video-next" aria-label="Next video">&#10095;</button>
       </div>
-      <p class="carousel-caption" id="video-caption">Video 1 of 1</p>
+      <p class="carousel-caption" id="video-caption">Nothing added yet</p>
     </div>
   </section>
 
@@ -243,10 +183,15 @@
     <p>&copy; <span id="year"></span> Mohamad Raziqaiman Bin Mohd Yazid. All artwork rights reserved.</p>
   </footer>
 
-  <!-- COMMENT: model-viewer library, needed only if you add interactive 3D models above -->
+  <!-- COMMENT: model-viewer library, needed for the interactive 3D viewer above -->
   <script type="module" src="https://unpkg.com/@google/model-viewer@3.4.0/dist/model-viewer.min.js"></script>
 
+  <!-- COMMENT: Supabase client library — used by site-data.js to fetch live content -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
+  <script src="config.js"></script>
   <script src="script.js"></script>
+  <script src="site-data.js"></script>
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>

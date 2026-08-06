@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CMS — AgrabanArt</title>
+  <!-- COMMENT: this page is intentionally not linked from the public nav
+       anywhere on the main site. Bookmark this file's URL for yourself.
+       It's not truly "hidden" (anyone with the URL can load the login
+       screen), but nothing can be changed without your Supabase login,
+       which is the actual security boundary. -->
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="cms.css">
+</head>
+<body class="cms-body">
+
+  <!-- ==================== LOGIN SCREEN ==================== -->
+  <div class="login-screen" id="login-screen">
+    <div class="login-card">
+      <p class="eyebrow">Admin</p>
+      <h1>AGRABAN<span style="color: var(--gold);">ART</span> CMS</h1>
+
+      <form id="login-form">
+        <div class="form-field">
+          <label for="login-email">Email</label>
+          <input type="email" id="login-email" required autocomplete="username">
+        </div>
+        <div class="form-field">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn" style="width:100%;">Log In</button>
+        <p class="form-error" id="login-error"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== DASHBOARD ==================== -->
+  <div class="cms-layout" id="dashboard" hidden>
+
+    <aside class="cms-sidebar">
+      <a href="index.html" class="brand" target="_blank">AGRABAN<span style="color: var(--gold);">ART</span></a>
+      <button class="cms-nav-btn is-active" data-panel="panel-projects">Projects</button>
+      <button class="cms-nav-btn" data-panel="panel-events">Events &amp; Achievements</button>
+      <button class="cms-nav-btn" data-panel="panel-trash">Trash</button>
+      <button class="cms-nav-btn logout" id="logout-btn">Log Out</button>
+    </aside>
+
+    <main class="cms-main">
+
+      <!-- ==================== PROJECTS PANEL ==================== -->
+      <section class="cms-panel is-active" id="panel-projects">
+        <h2>Projects</h2>
+        <p class="cms-empty-note">Manage the 2D Illustrations, 3D Modelling, and Animation Showreel sections on the Projects page.</p>
+
+        <div class="cms-subtabs">
+          <button class="cms-subtab-btn is-active" data-sub="sub-2d">2D Illustrations</button>
+          <button class="cms-subtab-btn" data-sub="sub-3d">3D Modelling</button>
+          <button class="cms-subtab-btn" data-sub="sub-anim">Animation Showreel</button>
+        </div>
+
+        <!-- 2D Illustrations — capped at 6 -->
+        <div class="cms-subpanel is-active" id="sub-2d">
+          <p class="cms-limit-note" id="limit-2d-note"></p>
+          <div id="list-2d"></div>
+          <button class="cms-btn primary" id="add-2d-btn">+ Add 2D Illustration</button>
+          <div class="cms-form" id="form-2d" hidden>
+            <h3 id="form-2d-title">Add 2D Illustration</h3>
+            <input type="hidden" id="form-2d-id">
+            <div class="form-field"><label>Title</label><input type="text" id="form-2d-name"></div>
+            <div class="form-field"><label>Description (shown on hover + detail page)</label><textarea id="form-2d-desc"></textarea></div>
+            <div class="form-field"><label>Image file</label><input type="file" id="form-2d-file" accept="image/*"></div>
+            <div class="cms-form-actions">
+              <button class="cms-btn primary" id="save-2d-btn">Save</button>
+              <button class="cms-btn" id="cancel-2d-btn">Cancel</button>
+            </div>
+            <p class="cms-status" id="status-2d"></p>
+          </div>
+        </div>
+
+        <!-- 3D Modelling -->
+        <div class="cms-subpanel" id="sub-3d">
+          <div id="list-3d"></div>
+          <button class="cms-btn primary" id="add-3d-btn">+ Add 3D Piece</button>
+          <div class="cms-form" id="form-3d" hidden>
+            <h3 id="form-3d-title">Add 3D Piece</h3>
+            <input type="hidden" id="form-3d-id">
+            <div class="form-field"><label>Title</label><input type="text" id="form-3d-name"></div>
+            <div class="form-field"><label>Description</label><textarea id="form-3d-desc"></textarea></div>
+            <div class="form-field"><label>Rendered still image</label><input type="file" id="form-3d-file" accept="image/*"></div>
+            <div class="form-field"><label>Interactive 3D model file (.glb / .gltf) — optional</label><input type="file" id="form-3d-model" accept=".glb,.gltf"></div>
+            <div class="cms-form-actions">
+              <button class="cms-btn primary" id="save-3d-btn">Save</button>
+              <button class="cms-btn" id="cancel-3d-btn">Cancel</button>
+            </div>
+            <p class="cms-status" id="status-3d"></p>
+          </div>
+        </div>
+
+        <!-- Animation Showreel — YouTube links, no file upload -->
+        <div class="cms-subpanel" id="sub-anim">
+          <div id="list-anim"></div>
+          <button class="cms-btn primary" id="add-anim-btn">+ Add Video</button>
+          <div class="cms-form" id="form-anim" hidden>
+            <h3 id="form-anim-title">Add Video</h3>
+            <input type="hidden" id="form-anim-id">
+            <div class="form-field"><label>Title</label><input type="text" id="form-anim-name"></div>
+            <div class="form-field"><label>Description</label><textarea id="form-anim-desc"></textarea></div>
+            <div class="form-field"><label>YouTube link</label><input type="url" id="form-anim-link" placeholder="https://www.youtube.com/watch?v=..."></div>
+            <div class="cms-form-actions">
+              <button class="cms-btn primary" id="save-anim-btn">Save</button>
+              <button class="cms-btn" id="cancel-anim-btn">Cancel</button>
+            </div>
+            <p class="cms-status" id="status-anim"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== EVENTS & ACHIEVEMENTS PANEL ==================== -->
+      <section class="cms-panel" id="panel-events">
+        <h2>Events &amp; Achievements</h2>
+        <p class="cms-empty-note">Manage the Awards and Exhibitions &amp; Competitions sections.</p>
+
+        <div class="cms-subtabs">
+          <button class="cms-subtab-btn is-active" data-sub="sub-awards">Awards</button>
+          <button class="cms-subtab-btn" data-sub="sub-exhibitions">Exhibitions &amp; Competitions</button>
+        </div>
+
+        <!-- Awards -->
+        <div class="cms-subpanel is-active" id="sub-awards">
+          <div id="list-awards"></div>
+          <button class="cms-btn primary" id="add-award-btn">+ Add Award</button>
+          <div class="cms-form" id="form-award" hidden>
+            <h3 id="form-award-title">Add Award</h3>
+            <input type="hidden" id="form-award-id">
+            <div class="form-field"><label>Title</label><input type="text" id="form-award-name"></div>
+            <div class="form-field"><label>Description</label><textarea id="form-award-desc"></textarea></div>
+            <div class="form-field"><label>Year</label><input type="text" id="form-award-year"></div>
+            <div class="form-field">
+              <label>Related exhibition (jumped to via "View related showcase")</label>
+              <select id="form-award-exhibition"><option value="">None</option></select>
+            </div>
+            <div class="cms-form-actions">
+              <button class="cms-btn primary" id="save-award-btn">Save</button>
+              <button class="cms-btn" id="cancel-award-btn">Cancel</button>
+            </div>
+            <p class="cms-status" id="status-award"></p>
+          </div>
+        </div>
+
+        <!-- Exhibitions & Competitions -->
+        <div class="cms-subpanel" id="sub-exhibitions">
+          <div id="list-exhibitions"></div>
+          <button class="cms-btn primary" id="add-exhibition-btn">+ Add Exhibition / Competition</button>
+          <div class="cms-form" id="form-exhibition" hidden>
+            <h3 id="form-exhibition-title">Add Exhibition / Competition</h3>
+            <input type="hidden" id="form-exhibition-id">
+            <div class="form-field"><label>Title</label><input type="text" id="form-exhibition-name"></div>
+            <div class="form-field"><label>Description</label><textarea id="form-exhibition-desc"></textarea></div>
+            <div class="cms-form-actions">
+              <button class="cms-btn primary" id="save-exhibition-btn">Save</button>
+              <button class="cms-btn" id="cancel-exhibition-btn">Cancel</button>
+            </div>
+            <p class="cms-status" id="status-exhibition"></p>
+
+            <!-- Image management only shows once the exhibition has been saved once -->
+            <div id="exhibition-images-section" hidden style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+              <h4 style="font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 1rem;">Showcase Images</h4>
+              <div id="exhibition-images-list"></div>
+              <div class="form-field" style="margin-top: 1rem;">
+                <label>Add image</label>
+                <input type="file" id="exhibition-image-file" accept="image/*">
+              </div>
+              <button class="cms-btn" id="add-exhibition-image-btn">+ Add Image</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TRASH PANEL ==================== -->
+      <section class="cms-panel" id="panel-trash">
+        <h2>Trash</h2>
+        <p class="cms-empty-note">
+          When you replace or remove media anywhere in the CMS, the old file lands here instead of
+          being deleted right away. Restore it to put it back where it was, or delete it permanently
+          to free up space in your Cloudflare R2 bucket.
+        </p>
+        <div id="list-trash" style="margin-top: 1.5rem;"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="config.js"></script>
+  <script src="cms.js"></script>
+</body>
+</html>

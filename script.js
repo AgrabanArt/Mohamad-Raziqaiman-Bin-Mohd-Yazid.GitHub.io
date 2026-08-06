@@ -1,38 +1,16 @@
 // ==========================================================================
 // AgrabanArt — shared site behavior
-// Handles: nav background on scroll, mobile menu toggle, and the
-// scroll-reveal / slash-divider entrance animations.
-// ==========================================================================
-
-// ==========================================================================
-// AgrabanArt — shared site behavior
 // Handles: nav background on scroll, mobile menu toggle, scroll-reveal
-// animations, and the 3D model / video carousels on the Projects page.
+// animations, sub-nav scroll-spy, and the 3D model / video carousels on
+// the Projects page.
+//
+// COMMENT: the model/video carousels below start out empty (showing their
+// placeholder text) and are populated by site-data.js once it fetches
+// content from Supabase. window.AgrabanCarousels exposes .updateModels()
+// and .updateVideos() for that purpose — you shouldn't need to touch this
+// file when adding real content, only script the carousels are re-used by
+// site-data.js.
 // ==========================================================================
-
-// ---------------------------------------------------------------------
-// MODEL CAROUSEL DATA — edit this array to add, remove, or reorder the
-// models shown in the 3D Modelling carousel on projects.html.
-// Leave src as "" to show the placeholder for that slot; fill it in with
-// a path to a .glb/.gltf file once it's ready (e.g. "models/piece-01.glb").
-// ---------------------------------------------------------------------
-const models = [
-  { title: 'Project Title', src: '' },
-  { title: 'Project Title', src: '' },
-  { title: 'Project Title', src: '' },
-];
-
-// ---------------------------------------------------------------------
-// VIDEO CAROUSEL DATA — edit this array to add, remove, or reorder the
-// clips shown in the Animation Showreel carousel on projects.html.
-// Leave src as "" to show the placeholder for that slot; fill it in with
-// a path to a video file once it's ready (e.g. "media/reel-01.mp4").
-// ---------------------------------------------------------------------
-const videos = [
-  { title: 'Project Title', src: '' },
-  { title: 'Project Title', src: '' },
-  { title: 'Project Title', src: '' },
-];
 
 document.addEventListener('DOMContentLoaded', () => {
   const nav = document.querySelector('.site-nav');
@@ -61,61 +39,96 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ---------------------------------------------------------------------
-  // Generic carousel wiring — used for both the 3D model and video
-  // carousels. Swaps content based on the data arrays defined above and
-  // updates the "X of N" caption.
+  // Generic carousel controller. Data can be swapped out later via
+  // .update(newData) — that's what lets site-data.js hand it live content
+  // fetched from Supabase after the page has already loaded.
   // ---------------------------------------------------------------------
-  function setupCarousel({ data, prevBtn, nextBtn, mediaEl, placeholderEl, caption, apply }) {
-    if (!prevBtn || !nextBtn) return;
+  function createCarousel({ prevBtn, nextBtn, container, placeholderEl, caption, hasContent, renderItem }) {
+    let data = [{ title: 'Nothing added yet', empty: true }];
     let index = 0;
 
     const render = () => {
       const item = data[index];
-      const hasSrc = item && item.src;
-      if (mediaEl) mediaEl.style.display = hasSrc ? 'block' : 'none';
-      if (placeholderEl) placeholderEl.style.display = hasSrc ? 'none' : 'flex';
-      if (hasSrc) apply(item);
-      if (caption) caption.textContent = `${index + 1} of ${data.length} — ${item.title}`;
+      const filled = !item.empty && hasContent(item);
+      if (placeholderEl) placeholderEl.style.display = filled ? 'none' : 'flex';
+      if (container) {
+        container.style.display = filled ? 'block' : 'none';
+        if (filled) renderItem(item, container);
+      }
+      if (caption) {
+        caption.textContent = item.empty
+          ? 'Nothing added yet'
+          : `${index + 1} of ${data.length} — ${item.title}`;
+      }
     };
 
-    prevBtn.addEventListener('click', () => {
-      index = (index - 1 + data.length) % data.length;
-      render();
-    });
-    nextBtn.addEventListener('click', () => {
-      index = (index + 1) % data.length;
-      render();
-    });
+    if (prevBtn && nextBtn) {
+      prevBtn.addEventListener('click', () => {
+        index = (index - 1 + data.length) % data.length;
+        render();
+      });
+      nextBtn.addEventListener('click', () => {
+        index = (index + 1) % data.length;
+        render();
+      });
+    }
 
     render();
+
+    return {
+      update(newData) {
+        data = newData && newData.length ? newData : [{ title: 'Nothing added yet', empty: true }];
+        index = 0;
+        render();
+      },
+    };
   }
 
-  setupCarousel({
-    data: models,
+  const modelCarousel = createCarousel({
     prevBtn: document.getElementById('model-prev'),
     nextBtn: document.getElementById('model-next'),
-    mediaEl: document.getElementById('model-viewer'),
+    container: document.getElementById('model-viewer'),
     placeholderEl: document.getElementById('model-placeholder-text'),
     caption: document.getElementById('model-caption'),
-    apply: (item) => {
-      const viewer = document.getElementById('model-viewer');
-      viewer.setAttribute('src', item.src);
-      viewer.setAttribute('alt', item.title);
+    hasContent: (item) => !!item.src,
+    renderItem: (item, el) => {
+      el.setAttribute('src', item.src);
+      el.setAttribute('alt', item.title);
     },
   });
 
-  setupCarousel({
-    data: videos,
+  const videoCarousel = createCarousel({
     prevBtn: document.getElementById('video-prev'),
     nextBtn: document.getElementById('video-next'),
-    mediaEl: document.getElementById('showreel-video'),
+    container: document.getElementById('video-media-wrap'),
     placeholderEl: document.getElementById('video-placeholder-text'),
     caption: document.getElementById('video-caption'),
-    apply: (item) => {
-      const video = document.getElementById('showreel-video');
-      video.src = item.src;
+    hasContent: (item) => !!(item.type === 'youtube' ? item.id : item.src),
+    renderItem: (item, el) => {
+      el.innerHTML = '';
+      if (item.type === 'youtube') {
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://www.youtube-nocookie.com/embed/${item.id}`;
+        iframe.style.cssText = 'width:100%; height:100%; border:0;';
+        iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+        iframe.allowFullscreen = true;
+        el.appendChild(iframe);
+      } else {
+        const video = document.createElement('video');
+        video.src = item.src;
+        video.controls = true;
+        video.style.cssText = 'width:100%; height:100%;';
+        el.appendChild(video);
+      }
     },
   });
+
+  // Exposed so site-data.js can feed live Supabase content into the
+  // carousels once it's fetched.
+  window.AgrabanCarousels = {
+    updateModels: (data) => modelCarousel.update(data),
+    updateVideos: (data) => videoCarousel.update(data),
+  };
 
   // Sub-nav scroll-spy (Projects / Events pages) — highlights the tab
   // matching whichever section is currently in view
@@ -141,23 +154,32 @@ document.addEventListener('DOMContentLoaded', () => {
     updateActiveSubnav();
   }
 
-  // Scroll-reveal for sections and slash dividers
-  const revealTargets = document.querySelectorAll('.reveal, .slash-divider');
-  if ('IntersectionObserver' in window) {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.15 }
-    );
-    revealTargets.forEach((el) => observer.observe(el));
-  } else {
-    // Fallback: no IntersectionObserver support, just show everything
-    revealTargets.forEach((el) => el.classList.add('is-visible'));
-  }
+  // Scroll-reveal for sections and slash dividers.
+  // COMMENT: this also needs to run again for content site-data.js injects
+  // after this initial pass — see revealNewElements() below, which
+  // site-data.js calls after rendering fetched content.
+  const observer = 'IntersectionObserver' in window
+    ? new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.15 }
+      )
+    : null;
+
+  const observeReveal = (el) => {
+    if (observer) observer.observe(el);
+    else el.classList.add('is-visible');
+  };
+
+  document.querySelectorAll('.reveal, .slash-divider').forEach(observeReveal);
+
+  // Exposed so site-data.js can register newly-created elements (project
+  // tiles, award rows, etc.) for the same fade-in-on-scroll treatment.
+  window.AgrabanReveal = { observe: observeReveal };
 });
