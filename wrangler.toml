@@ -12,7 +12,7 @@ compatibility_date = "2024-01-01"
 # dashboard under R2 -> Create bucket)
 [[r2_buckets]]
 binding = "MEDIA_BUCKET"
-bucket_name = "agrabanart-media"
+bucket_name = "agrabanart-website-depository"
 
 # COMMENT: SUPABASE_URL, SUPABASE_ANON_KEY, and ADMIN_EMAIL are set as
 # secrets, not here — run these from this folder after your first deploy:
