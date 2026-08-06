@@ -3,20 +3,97 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Contact | My Portfolio</title>
+  <title>Contact — AgrabanArt</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* Spread out horizontally in a wrapping row instead of a narrow stacked column */
+    .contact-links-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      max-width: 780px;
+      margin: 2.5rem auto 0;
+    }
+    .contact-links-grid a {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.9rem 1.5rem;
+      border: 1px solid var(--border);
+      text-decoration: none;
+      color: var(--white);
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      letter-spacing: 0.03em;
+      transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+    }
+    .contact-links-grid a:hover,
+    .contact-links-grid a:focus-visible {
+      border-color: var(--gold);
+      color: var(--gold-bright);
+      background: rgba(201, 162, 75, 0.06);
+      outline: none;
+    }
+  </style>
 </head>
 <body>
-  <main class="card">
-    <p class="eyebrow">Page 3 of 3</p>
-    <h1>Contact</h1>
-    <p class="placeholder-text">
-      This is a placeholder for your contact info &mdash; email, social links, or a contact form will go here later.
+
+  <nav class="site-nav">
+    <a href="index.html" class="brand">AGRABAN<span>ART</span></a>
+    <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="projects.html">Projects</a></li>
+      <li><a href="events.html">Events &amp; Achievements</a></li>
+      <li><a href="contact.html" class="is-active">Contact</a></li>
+    </ul>
+  </nav>
+
+  <header style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 9rem 2rem 4rem; max-width: 900px; margin: 0 auto;">
+    <!-- COMMENT: replace this div with <img class="hero-portrait" src="media/portrait.jpg" alt="Your name"> -->
+    <div class="hero-portrait reveal">PHOTO</div>
+
+    <p class="eyebrow reveal" style="margin-bottom: 1.25rem;">Let's Talk</p>
+    <h1 class="reveal" style="font-family: var(--font-display); font-size: clamp(2.75rem, 8vw, 5rem); margin: 0;">Contact</h1>
+    <p class="reveal" style="max-width: 420px; color: var(--muted); margin: 1.5rem 0 0;">
+      For commissions, collaborations, or just to say hi — reach out through any of the channels below.
     </p>
-    <nav class="nav-buttons">
-      <a href="index.html">Go to Home</a>
-      <a href="projects.html">Go to Projects</a>
-    </nav>
-  </main>
+
+    <!--
+      COMMENT: Resume/CV download.
+      1. Add your resume/CV file to this folder (e.g. resume.pdf).
+      2. Update the href below to point to it.
+      "download" attribute makes it save the file instead of opening in-browser.
+    -->
+    <div class="resume-btn-wrap reveal">
+      <a href="resume.pdf" download class="btn">Download Resume / CV</a>
+    </div>
+
+    <!--
+      COMMENT: Replace each href="#" below with your real profile links.
+      Email is already wired to open the user's mail client — just swap
+      the address.
+    -->
+    <div class="contact-links-grid reveal">
+      <a href="mailto:youremail@example.com">Email <span>&rarr;</span></a>
+      <a href="#" target="_blank" rel="noopener">Instagram <span>&rarr;</span></a>
+      <a href="#" target="_blank" rel="noopener">ArtStation <span>&rarr;</span></a>
+      <a href="#" target="_blank" rel="noopener">Behance <span>&rarr;</span></a>
+      <a href="#" target="_blank" rel="noopener">TikTok <span>&rarr;</span></a>
+      <a href="#" target="_blank" rel="noopener">YouTube <span>&rarr;</span></a>
+      <a href="#" target="_blank" rel="noopener">Linktree <span>&rarr;</span></a>
+    </div>
+  </header>
+
+  <footer class="site-footer">
+    <span class="brand" style="display:inline-block;">AGRABAN<span style="color: var(--gold);">ART</span></span>
+    <p>&copy; <span id="year"></span> Mohamad Raziqaiman Bin Mohd Yazid. All artwork rights reserved.</p>
+  </footer>
+
+  <script src="script.js"></script>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>

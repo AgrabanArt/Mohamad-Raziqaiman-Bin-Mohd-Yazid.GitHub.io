@@ -3,20 +3,272 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Projects | My Portfolio</title>
+  <title>Projects — AgrabanArt</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .project-section {
+      padding: 5rem 0 6rem;
+    }
+    .section-2d { background: var(--black-soft); }
+    .section-3d { background: var(--surface); }
+    .section-anim { background: var(--black-soft); }
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 3rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+    }
+    .section-head h2 {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      letter-spacing: 0.02em;
+      margin: 0.25rem 0 0;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+    @media (max-width: 720px) {
+      .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .model-slot {
+      aspect-ratio: 16 / 10;
+      border: 1px dashed var(--border);
+      background: rgba(201, 162, 75, 0.04);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      text-align: center;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .video-slot {
+      aspect-ratio: 16 / 9;
+      border: 1px dashed var(--border);
+      background: rgba(201, 162, 75, 0.04);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      text-align: center;
+      padding: 1.5rem;
+    }
+  </style>
 </head>
 <body>
-  <main class="card">
-    <p class="eyebrow">Page 2 of 3</p>
-    <h1>Projects</h1>
-    <p class="placeholder-text">
-      This is a placeholder for your project gallery &mdash; cards, screenshots, or case studies will go here later.
-    </p>
-    <nav class="nav-buttons">
-      <a href="index.html">Go to Home</a>
-      <a href="contact.html">Go to Contact</a>
-    </nav>
-  </main>
+
+  <nav class="site-nav">
+    <a href="index.html" class="brand">AGRABAN<span>ART</span></a>
+    <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="projects.html" class="is-active">Projects</a></li>
+      <li><a href="events.html">Events &amp; Achievements</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+  </nav>
+
+  <header style="padding: 9rem 2rem 2rem; text-align: center;">
+    <p class="eyebrow reveal">Selected Work</p>
+    <h1 class="reveal" style="font-family: var(--font-display); font-size: clamp(2.75rem, 8vw, 5rem); margin: 0.5rem 0 0;">Projects</h1>
+  </header>
+
+  <!-- Sticky sub-nav: click to jump to a section, active tab highlights on scroll -->
+  <nav class="subnav">
+    <ul class="subnav-list">
+      <li><a href="#section-2d">2D Illustrations</a></li>
+      <li><a href="#section-3d">3D Modelling</a></li>
+      <li><a href="#section-anim">Animation Showreel</a></li>
+    </ul>
+  </nav>
+
+  <!-- =========================== 2D ILLUSTRATIONS =========================== -->
+  <section id="section-2d" class="project-section section-2d">
+    <div class="wrap reveal">
+      <div class="section-head">
+        <span class="eyebrow">01</span>
+        <h2>2D Illustrations</h2>
+      </div>
+
+      <!--
+        COMMENT: Each tile below links out to a detail page (project-template.html
+        for now). To add a real project:
+        1. Duplicate project-template.html, rename it (e.g. project-2d-01.html),
+           and fill in its content.
+        2. Point this tile's href at your new file.
+        3. Replace the .tile-placeholder-label div with:
+           <img src="path/to/thumbnail.jpg" alt="Piece title">
+        4. Edit the .tile-title and <p> text inside .tile-caption to a short
+           description shown on hover.
+        Add or remove <a class="tile-link"> blocks as needed — the grid wraps
+        in rows of 3 (2 on mobile).
+      -->
+      <div class="gallery-grid">
+        <a href="project-template.html" class="tile-link">
+          <div class="tile-placeholder-label">2D PIECE 01<br>— insert image —</div>
+          <div class="tile-caption">
+            <p class="tile-title">Project Title</p>
+            <p>Short one- or two-line description of the piece goes here.</p>
+          </div>
+        </a>
+        <a href="project-template.html" class="tile-link">
+          <div class="tile-placeholder-label">2D PIECE 02<br>— insert image —</div>
+          <div class="tile-caption">
+            <p class="tile-title">Project Title</p>
+            <p>Short one- or two-line description of the piece goes here.</p>
+          </div>
+        </a>
+        <a href="project-template.html" class="tile-link">
+          <div class="tile-placeholder-label">2D PIECE 03<br>— insert image —</div>
+          <div class="tile-caption">
+            <p class="tile-title">Project Title</p>
+            <p>Short one- or two-line description of the piece goes here.</p>
+          </div>
+        </a>
+        <a href="project-template.html" class="tile-link">
+          <div class="tile-placeholder-label">2D PIECE 04<br>— insert image —</div>
+          <div class="tile-caption">
+            <p class="tile-title">Project Title</p>
+            <p>Short one- or two-line description of the piece goes here.</p>
+          </div>
+        </a>
+        <a href="project-template.html" class="tile-link">
+          <div class="tile-placeholder-label">2D PIECE 05<br>— insert image —</div>
+          <div class="tile-caption">
+            <p class="tile-title">Project Title</p>
+            <p>Short one- or two-line description of the piece goes here.</p>
+          </div>
+        </a>
+        <a href="project-template.html" class="tile-link">
+          <div class="tile-placeholder-label">2D PIECE 06<br>— insert image —</div>
+          <div class="tile-caption">
+            <p class="tile-title">Project Title</p>
+            <p>Short one- or two-line description of the piece goes here.</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="slash-divider"></div>
+
+  <!-- =========================== 3D MODELLING =========================== -->
+  <section id="section-3d" class="project-section section-3d">
+    <div class="wrap reveal">
+      <div class="section-head">
+        <span class="eyebrow">02</span>
+        <h2>3D Modelling</h2>
+      </div>
+
+      <!--
+        COMMENT: Interactive 3D model carousel.
+        To add, remove, or reorder models: open script.js, find the block
+        labeled "MODEL CAROUSEL DATA" near the top, and edit the `models`
+        array there. Each entry needs a title and a path to a .glb/.gltf file,
+        e.g. { title: "Piece Name", src: "models/piece-01.glb" }.
+        Leave src as an empty string "" to keep showing this placeholder for
+        that slot. The arrows below cycle through whatever is in the array.
+      -->
+      <div class="carousel">
+        <button class="carousel-arrow" id="model-prev" aria-label="Previous model">&#10094;</button>
+        <div class="model-slot carousel-slot" id="model-slot">
+          <model-viewer id="model-viewer" camera-controls auto-rotate style="width:100%; height:100%; display:none;"></model-viewer>
+          <div class="carousel-placeholder-text" id="model-placeholder-text">
+            INTERACTIVE 3D VIEWER<br>— insert .glb / .gltf model here —
+          </div>
+        </div>
+        <button class="carousel-arrow" id="model-next" aria-label="Next model">&#10095;</button>
+      </div>
+      <p class="carousel-caption" id="model-caption">Model 1 of 1</p>
+
+      <!-- COMMENT: still renders — same clickable tile pattern as the 2D section above -->
+      <div class="gallery-grid">
+        <a href="project-template.html" class="tile-link">
+          <div class="tile-placeholder-label">3D RENDER 01<br>— insert image —</div>
+          <div class="tile-caption">
+            <p class="tile-title">Project Title</p>
+            <p>Short one- or two-line description of the piece goes here.</p>
+          </div>
+        </a>
+        <a href="project-template.html" class="tile-link">
+          <div class="tile-placeholder-label">3D RENDER 02<br>— insert image —</div>
+          <div class="tile-caption">
+            <p class="tile-title">Project Title</p>
+            <p>Short one- or two-line description of the piece goes here.</p>
+          </div>
+        </a>
+        <a href="project-template.html" class="tile-link">
+          <div class="tile-placeholder-label">3D RENDER 03<br>— insert image —</div>
+          <div class="tile-caption">
+            <p class="tile-title">Project Title</p>
+            <p>Short one- or two-line description of the piece goes here.</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="slash-divider"></div>
+
+  <!-- =========================== ANIMATION SHOWREEL =========================== -->
+  <section id="section-anim" class="project-section section-anim">
+    <div class="wrap reveal">
+      <div class="section-head">
+        <span class="eyebrow">03</span>
+        <h2>Animation Showreel</h2>
+      </div>
+
+      <!--
+        COMMENT: Animation showreel carousel.
+        To add, remove, or reorder videos: open script.js, find the block
+        labeled "VIDEO CAROUSEL DATA" near the top, and edit the `videos`
+        array there. Each entry needs a title and a path to a video file,
+        e.g. { title: "Reel Name", src: "media/reel-01.mp4" }.
+        Leave src as an empty string "" to keep showing this placeholder for
+        that slot. The arrows below cycle through whatever is in the array.
+        You can also point an entry's src at a YouTube/Vimeo embed URL if
+        you'd rather link out than host the file directly — ask if you'd
+        like that wired up instead.
+      -->
+      <div class="carousel">
+        <button class="carousel-arrow" id="video-prev" aria-label="Previous video">&#10094;</button>
+        <div class="video-slot carousel-slot" id="video-slot">
+          <video id="showreel-video" controls style="width:100%; height:100%; display:none;"></video>
+          <div class="carousel-placeholder-text" id="video-placeholder-text">
+            SHOWREEL VIDEO<br>— insert video file or embed here —
+          </div>
+        </div>
+        <button class="carousel-arrow" id="video-next" aria-label="Next video">&#10095;</button>
+      </div>
+      <p class="carousel-caption" id="video-caption">Video 1 of 1</p>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <span class="brand" style="display:inline-block;">AGRABAN<span style="color: var(--gold);">ART</span></span>
+    <p>&copy; <span id="year"></span> Mohamad Raziqaiman Bin Mohd Yazid. All artwork rights reserved.</p>
+  </footer>
+
+  <!-- COMMENT: model-viewer library, needed only if you add interactive 3D models above -->
+  <script type="module" src="https://unpkg.com/@google/model-viewer@3.4.0/dist/model-viewer.min.js"></script>
+
+  <script src="script.js"></script>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>

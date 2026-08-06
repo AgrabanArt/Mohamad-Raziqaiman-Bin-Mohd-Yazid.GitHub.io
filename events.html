@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Events &amp; Achievements — AgrabanArt</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .achieve-section {
+      padding: 5rem 0 6rem;
+    }
+    .section-awards { background: var(--black-soft); }
+    .section-exhibitions { background: var(--surface); }
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 3rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+    }
+    .section-head h2 {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      letter-spacing: 0.02em;
+      margin: 0.25rem 0 0;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+    @media (max-width: 720px) {
+      .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="site-nav">
+    <a href="index.html" class="brand">AGRABAN<span>ART</span></a>
+    <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="projects.html">Projects</a></li>
+      <li><a href="events.html" class="is-active">Events &amp; Achievements</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+  </nav>
+
+  <header style="padding: 9rem 2rem 2rem; text-align: center;">
+    <p class="eyebrow reveal">Recognition</p>
+    <h1 class="reveal" style="font-family: var(--font-display); font-size: clamp(2.75rem, 8vw, 5rem); margin: 0.5rem 0 0;">Events &amp; Achievements</h1>
+  </header>
+
+  <!-- Sticky sub-nav — jumps between the two sections, active tab highlights on scroll -->
+  <nav class="subnav">
+    <ul class="subnav-list">
+      <li><a href="#section-awards">Awards</a></li>
+      <li><a href="#section-exhibitions">Exhibitions &amp; Competitions</a></li>
+    </ul>
+  </nav>
+
+  <!-- =========================== AWARDS =========================== -->
+  <section id="section-awards" class="achieve-section section-awards">
+    <div class="wrap reveal">
+      <div class="section-head">
+        <span class="eyebrow">01</span>
+        <h2>Awards</h2>
+      </div>
+
+      <!--
+        ============================================================
+        COMMENT: There are 5 award entries below (.achievement-item blocks).
+        TO ADD an award: copy one whole .achievement-item block (from
+          <div class="achievement-item"> to its closing </div>) and paste it
+          before the closing </div> of this section. Give its
+          .achievement-link a new href, e.g. "#showcase-6", and add a
+          matching .showcase-block with id="showcase-6" in the Exhibitions
+          & Competitions section below.
+        TO REMOVE an award: delete its whole .achievement-item block, and
+          delete the matching .showcase-block (same number) below if you no
+          longer need that showcase either.
+        Each award's "View related showcase" link jumps down to its matching
+        .showcase-block by id — keep the numbers in sync when you add/remove.
+        ============================================================
+      -->
+
+      <div class="achievement-item">
+        <div>
+          <h3>Award Title</h3>
+          <p>Short description of the award, the organizing body, and category.</p>
+          <a href="#showcase-1" class="achievement-link">View related showcase &rarr;</a>
+        </div>
+        <span class="achievement-date">2026</span>
+      </div>
+
+      <div class="achievement-item">
+        <div>
+          <h3>Award Title</h3>
+          <p>Short description of the award, the organizing body, and category.</p>
+          <a href="#showcase-2" class="achievement-link">View related showcase &rarr;</a>
+        </div>
+        <span class="achievement-date">2026</span>
+      </div>
+
+      <div class="achievement-item">
+        <div>
+          <h3>Award Title</h3>
+          <p>Short description of the award, the organizing body, and category.</p>
+          <a href="#showcase-3" class="achievement-link">View related showcase &rarr;</a>
+        </div>
+        <span class="achievement-date">2025</span>
+      </div>
+
+      <div class="achievement-item">
+        <div>
+          <h3>Award Title</h3>
+          <p>Short description of the award, the organizing body, and category.</p>
+          <a href="#showcase-4" class="achievement-link">View related showcase &rarr;</a>
+        </div>
+        <span class="achievement-date">2025</span>
+      </div>
+
+      <div class="achievement-item">
+        <div>
+          <h3>Award Title</h3>
+          <p>Short description of the award, the organizing body, and category.</p>
+          <a href="#showcase-5" class="achievement-link">View related showcase &rarr;</a>
+        </div>
+        <span class="achievement-date">2024</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="slash-divider"></div>
+
+  <!-- =========================== EXHIBITIONS & COMPETITIONS =========================== -->
+  <section id="section-exhibitions" class="achieve-section section-exhibitions">
+    <div class="wrap reveal">
+      <div class="section-head">
+        <span class="eyebrow">02</span>
+        <h2>Exhibitions &amp; Competitions</h2>
+      </div>
+
+      <!--
+        ============================================================
+        COMMENT: Each .showcase-block below corresponds to one award above
+        (matched by number — showcase-1 through showcase-5). This is where
+        you show the actual images/context for that award: where it was
+        exhibited, entry pieces, event photos, etc.
+        TO ADD/REMOVE: keep these in sync with the award list above — same
+        instructions apply (copy or delete a whole .showcase-block, and
+        give it a matching id).
+        Replace each .tile-placeholder-label div with:
+          <img src="path/to/image.jpg" alt="Description">
+        ============================================================
+      -->
+
+      <div id="showcase-1" class="showcase-block">
+        <p class="eyebrow">Related to: Award Title</p>
+        <h3>Exhibition / Competition Name</h3>
+        <p class="showcase-desc">Where it was held or hosted, and any notable context about the entry.</p>
+        <div class="gallery-grid">
+          <div class="tile-link"><div class="tile-placeholder-label">IMAGE 01<br>— insert image —</div></div>
+          <div class="tile-link"><div class="tile-placeholder-label">IMAGE 02<br>— insert image —</div></div>
+          <div class="tile-link"><div class="tile-placeholder-label">IMAGE 03<br>— insert image —</div></div>
+        </div>
+      </div>
+
+      <div id="showcase-2" class="showcase-block">
+        <p class="eyebrow">Related to: Award Title</p>
+        <h3>Exhibition / Competition Name</h3>
+        <p class="showcase-desc">Where it was held or hosted, and any notable context about the entry.</p>
+        <div class="gallery-grid">
+          <div class="tile-link"><div class="tile-placeholder-label">IMAGE 01<br>— insert image —</div></div>
+          <div class="tile-link"><div class="tile-placeholder-label">IMAGE 02<br>— insert image —</div></div>
+          <div class="tile-link"><div class="tile-placeholder-label">IMAGE 03<br>— insert image —</div></div>
+        </div>
+      </div>
+
+      <div id="showcase-3" class="showcase-block">
+        <p class="eyebrow">Related to: Award Title</p>
+        <h3>Exhibition / Competition Name</h3>
+        <p class="showcase-desc">Where it was held or hosted, and any notable context about the entry.</p>
+        <div class="gallery-grid">
+          <div class="tile-link"><div class="tile-placeholder-label">IMAGE 01<br>— insert image —</div></div>
+          <div class="tile-link"><div class="tile-placeholder-label">IMAGE 02<br>— insert image —</div></div>
+          <div class="tile-link"><div class="tile-placeholder-label">IMAGE 03<br>— insert image —</div></div>
+        </div>
+      </div>
+
+      <div id="showcase-4" class="showcase-block">
+        <p class="eyebrow">Related to: Award Title</p>
+        <h3>Exhibition / Competition Name</h3>
+        <p class="showcase-desc">Where it was held or hosted, and any notable context about the entry.</p>
+        <div class="gallery-grid">
+          <div class="tile-link"><div class="tile-placeholder-label">IMAGE 01<br>— insert image —</div></div>
+          <div class="tile-link"><div class="tile-placeholder-label">IMAGE 02<br>— insert image —</div></div>
+          <div class="tile-link"><div class="tile-placeholder-label">IMAGE 03<br>— insert image —</div></div>
+        </div>
+      </div>
+
+      <div id="showcase-5" class="showcase-block">
+        <p class="eyebrow">Related to: Award Title</p>
+        <h3>Exhibition / Competition Name</h3>
+        <p class="showcase-desc">Where it was held or hosted, and any notable context about the entry.</p>
+        <div class="gallery-grid">
+          <div class="tile-link"><div class="tile-placeholder-label">IMAGE 01<br>— insert image —</div></div>
+          <div class="tile-link"><div class="tile-placeholder-label">IMAGE 02<br>— insert image —</div></div>
+          <div class="tile-link"><div class="tile-placeholder-label">IMAGE 03<br>— insert image —</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <span class="brand" style="display:inline-block;">AGRABAN<span style="color: var(--gold);">ART</span></span>
+    <p>&copy; <span id="year"></span> Mohamad Raziqaiman Bin Mohd Yazid. All artwork rights reserved.</p>
+  </footer>
+
+  <script src="script.js"></script>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

@@ -3,20 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home | My Portfolio</title>
+  <title>AgrabanArt — Digital Portfolio</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="card">
-    <p class="eyebrow">Page 1 of 3</p>
-    <h1>Home</h1>
-    <p class="placeholder-text">
-      This is a placeholder for your homepage &mdash; an intro, photo, or headline will go here later.
-    </p>
-    <nav class="nav-buttons">
-      <a href="projects.html">Go to Projects</a>
-      <a href="contact.html">Go to Contact</a>
-    </nav>
-  </main>
+
+  <nav class="site-nav">
+    <a href="index.html" class="brand">AGRABAN<span>ART</span></a>
+    <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
+    <ul class="nav-links">
+      <li><a href="index.html" class="is-active">Home</a></li>
+      <li><a href="projects.html">Projects</a></li>
+      <li><a href="events.html">Events &amp; Achievements</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+  </nav>
+
+  <header class="hero">
+    <!--
+      COMMENT: Background reel placeholder.
+      Replace the <source src="..."> below with your compiled animation/artwork
+      loop (an .mp4 works best — keep it muted, it autoplays without sound).
+      poster="" can point to a fallback image shown before the video loads.
+    -->
+    <video class="hero-bg-video" autoplay muted loop playsinline poster="">
+      <source src="media/showreel-bg.mp4" type="video/mp4">
+    </video>
+    <div class="hero-overlay"></div>
+
+    <div class="hero-content">
+      <!-- COMMENT: replace this div with <img class="hero-portrait" src="media/portrait.jpg" alt="Your name"> -->
+      <div class="hero-portrait reveal">PHOTO</div>
+
+      <p class="eyebrow reveal" style="margin-bottom: 1rem;">2D &middot; 3D &middot; Animation</p>
+
+      <h1 class="reveal" style="font-family: var(--font-display); font-size: clamp(3.5rem, 12vw, 8rem); line-height: 0.95; letter-spacing: 0.02em; margin: 0;">
+        AGRABAN<span style="color: var(--gold);">ART</span>
+      </h1>
+
+      <!-- COMMENT: replace with your preferred display name / tagline if you want something other than the full legal name below -->
+      <p class="reveal" style="font-family: var(--font-mono); color: var(--muted); font-size: 0.9rem; letter-spacing: 0.05em; margin-top: 1rem;">
+        Mohamad Raziqaiman Bin Mohd Yazid
+      </p>
+
+      <p class="reveal" style="max-width: 480px; color: var(--muted); margin: 1.75rem 0 2.5rem;">
+        <!-- COMMENT: replace this line with your own short artist statement / tagline -->
+        Visual artist working across illustration, 3D modelling, and animation — moving between horror, stylized, and anime aesthetics.
+      </p>
+
+      <div class="reveal" style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+        <a href="projects.html" class="btn">View Projects</a>
+        <a href="contact.html" class="btn btn-quiet">Get in Touch</a>
+      </div>
+    </div>
+  </header>
+
+  <footer class="site-footer">
+    <span class="brand" style="display:inline-block;">AGRABAN<span style="color: var(--gold);">ART</span></span>
+    <p>&copy; <span id="year"></span> Mohamad Raziqaiman Bin Mohd Yazid. All artwork rights reserved.</p>
+  </footer>
+
+  <script src="script.js"></script>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
