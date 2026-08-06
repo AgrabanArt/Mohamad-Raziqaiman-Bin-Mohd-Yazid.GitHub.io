@@ -1,0 +1,81 @@
+:root {
+  --bg: #101014;
+  --surface: #17171d;
+  --text: #f2f2f0;
+  --muted: #9a9aa2;
+  --accent: #7c9eff;
+  --border: #26262e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.card {
+  width: 100%;
+  max-width: 560px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 3rem 2.5rem;
+  text-align: center;
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-size: 0.8rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin: 0 0 0.75rem;
+}
+
+h1 {
+  font-size: 2rem;
+  margin: 0 0 1rem;
+}
+
+p.placeholder-text {
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0 0 2rem;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.nav-buttons a {
+  display: inline-block;
+  padding: 0.65rem 1.4rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  color: var(--text);
+  background: transparent;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.nav-buttons a:hover,
+.nav-buttons a:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent);
+  outline: none;
+}
