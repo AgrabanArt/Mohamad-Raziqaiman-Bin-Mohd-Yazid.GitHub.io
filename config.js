@@ -20,7 +20,7 @@
 // include a trailing slash.
 // ============================================================================
 
-const AGRABAN_CONFIG = {
+window.AGRABAN_CONFIG = {
   SUPABASE_URL: 'https://zomtiesfamoxkumxonqe.supabase.co',
   SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvbXRpZXNmYW1veGt1bXhvbnFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5OTY0NDUsImV4cCI6MjEwMTU3MjQ0NX0.tmTCXWB_zJ8F5qWL1jp9gVNWxkxqXV2s9zofz80pLXw',
   MEDIA_WORKER_URL: 'https://agrabanart-media-worker.agraban-media.workers.dev',
