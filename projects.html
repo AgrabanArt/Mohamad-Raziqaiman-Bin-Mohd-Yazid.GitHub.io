@@ -73,11 +73,11 @@
 
   <!--
     ============================================================
-    COMMENT: This page now pulls its content live from Supabase via
+    COMMENT: This page pulls its content live from Supabase via
     site-data.js — the gallery-grid divs below start out EMPTY in the
     actual page source and get filled in by JavaScript after fetching.
-    If you haven't finished setting up config.js yet (see README.md),
-    you'll just see "Nothing added yet" placeholders, which is expected.
+    All three sections (2D Illustrations, 3D Modelling, Animation
+    Showreel) are capped at 6 items each — enforced from the CMS.
     You no longer need to hand-edit this file to add projects — do that
     from cms.html instead.
     ============================================================
@@ -146,7 +146,7 @@
       </div>
       <p class="carousel-caption" id="model-caption">Nothing added yet</p>
 
-      <!-- Still-render gallery — filled in by site-data.js -->
+      <!-- Still-render gallery — filled in by site-data.js — up to 6 items -->
       <div class="gallery-grid" id="gallery-3d">
         <p style="color: var(--muted); font-family: var(--font-mono); font-size: 0.85rem;">Nothing added yet — add pieces from the CMS.</p>
       </div>
@@ -163,7 +163,7 @@
         <h2>Animation Showreel</h2>
       </div>
 
-      <!-- Video/YouTube carousel — data comes from site-data.js -->
+      <!-- Video/YouTube carousel — data comes from site-data.js — up to 6 items -->
       <div class="carousel">
         <button class="carousel-arrow" id="video-prev" aria-label="Previous video">&#10094;</button>
         <div class="video-slot carousel-slot" id="video-slot">

@@ -1,15 +1,11 @@
 # ============================================================================
 # Wrangler config for the AgrabanArt media Worker
-# COMMENT: fill in the placeholders below, then run `wrangler deploy` from
-# inside this cloudflare-worker/ folder.
 # ============================================================================
 
 name = "agrabanart-media-worker"
 main = "media-worker.js"
 compatibility_date = "2024-01-01"
 
-# COMMENT: replace with your R2 bucket's name (created in the Cloudflare
-# dashboard under R2 -> Create bucket)
 [[r2_buckets]]
 binding = "MEDIA_BUCKET"
 bucket_name = "agrabanart-website-depository"

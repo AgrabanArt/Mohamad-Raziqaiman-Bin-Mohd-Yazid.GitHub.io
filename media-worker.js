@@ -31,22 +31,12 @@
 // 7. Copy the deployed Worker URL (looks like
 //    https://agrabanart-media-worker.your-subdomain.workers.dev) into
 //    config.js as MEDIA_WORKER_URL
-//
-// IF YOU DEPLOYED THIS WORKER BEFORE 2026-08-06: there was a bug where the
-// apikey header sent to Supabase reused your own login token instead of
-// the project's anon key, causing every upload to fail with 401
-// Unauthorized. If you're updating an existing deployment, just add the
-// new secret and redeploy:
-//   wrangler secret put SUPABASE_ANON_KEY
-//   wrangler deploy
 // ============================================================================
 
 export default {
   async fetch(request, env) {
-    // Allow the CMS page (running in the browser) to call this Worker
-    // from a different domain.
     const corsHeaders = {
-      'Access-Control-Allow-Origin': '*', // COMMENT: for tighter security once live, replace '*' with your actual site URL, e.g. 'https://agrabanart.github.io'
+      'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'PUT, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     };
@@ -55,12 +45,6 @@ export default {
       return new Response(null, { headers: corsHeaders });
     }
 
-    // ------------------------------------------------------------------
-    // Step 1: verify the request is from a logged-in admin.
-    // The CMS sends the Supabase access token in the Authorization header
-    // as "Bearer <token>". We ask Supabase to confirm it's valid and get
-    // back the user's email, which we compare against ADMIN_EMAIL.
-    // ------------------------------------------------------------------
     const authHeader = request.headers.get('Authorization') || '';
     const token = authHeader.replace('Bearer ', '');
 
@@ -71,7 +55,7 @@ export default {
     const userCheck = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
       headers: {
         Authorization: `Bearer ${token}`,
-        apikey: env.SUPABASE_ANON_KEY, // COMMENT: this was the bug — must be the project's anon key, not the user's own token
+        apikey: env.SUPABASE_ANON_KEY,
       },
     });
 
@@ -84,10 +68,6 @@ export default {
       return new Response('Not authorized', { status: 403, headers: corsHeaders });
     }
 
-    // ------------------------------------------------------------------
-    // Step 2: handle the actual upload or delete.
-    // Object key comes in as a query param, e.g. ?key=projects/piece-01.jpg
-    // ------------------------------------------------------------------
     const url = new URL(request.url);
     const key = url.searchParams.get('key');
 
@@ -96,7 +76,6 @@ export default {
     }
 
     if (request.method === 'PUT') {
-      // Upload (or overwrite) a file in the bucket
       await env.MEDIA_BUCKET.put(key, request.body, {
         httpMetadata: { contentType: request.headers.get('Content-Type') || 'application/octet-stream' },
       });
@@ -106,8 +85,6 @@ export default {
     }
 
     if (request.method === 'DELETE') {
-      // Permanently remove a file from the bucket (called only when an
-      // item is deleted forever from the CMS Trash tab)
       await env.MEDIA_BUCKET.delete(key);
       return new Response(JSON.stringify({ success: true, key }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

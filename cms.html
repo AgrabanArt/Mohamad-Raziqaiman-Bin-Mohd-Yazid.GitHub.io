@@ -4,11 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CMS — AgrabanArt</title>
-  <!-- COMMENT: this page is intentionally not linked from the public nav
-       anywhere on the main site. Bookmark this file's URL for yourself.
-       It's not truly "hidden" (anyone with the URL can load the login
-       screen), but nothing can be changed without your Supabase login,
-       which is the actual security boundary. -->
   <meta name="robots" content="noindex, nofollow">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="cms.css">
@@ -41,18 +36,46 @@
 
     <aside class="cms-sidebar">
       <a href="index.html" class="brand" target="_blank">AGRABAN<span style="color: var(--gold);">ART</span></a>
-      <button class="cms-nav-btn is-active" data-panel="panel-projects">Projects</button>
+      <button class="cms-nav-btn is-active" data-panel="panel-home">Home</button>
+      <button class="cms-nav-btn" data-panel="panel-projects">Projects</button>
       <button class="cms-nav-btn" data-panel="panel-events">Events &amp; Achievements</button>
+      <button class="cms-nav-btn" data-panel="panel-contact">Contact</button>
       <button class="cms-nav-btn" data-panel="panel-trash">Trash</button>
       <button class="cms-nav-btn logout" id="logout-btn">Log Out</button>
     </aside>
 
     <main class="cms-main">
 
+      <!-- ==================== HOME PANEL ==================== -->
+      <section class="cms-panel is-active" id="panel-home">
+        <h2>Home</h2>
+        <p class="cms-empty-note">Manage the looping background video and the tagline text on the homepage hero.</p>
+
+        <div class="cms-form" style="margin-top: 1.5rem;" id="form-home">
+          <h3>Background Video</h3>
+          <div id="home-video-current" class="cms-empty-note" style="margin-bottom: 0.75rem;"></div>
+          <div class="form-field">
+            <label>Upload new looping video (.mp4, keep it short and compressed — this autoplays muted on every visit)</label>
+            <input type="file" id="form-home-video" accept="video/mp4">
+          </div>
+
+          <h3 style="margin-top: 1.5rem;">Tagline</h3>
+          <div class="form-field">
+            <label>Text shown under the site title on the homepage</label>
+            <textarea id="form-home-tagline"></textarea>
+          </div>
+
+          <div class="cms-form-actions">
+            <button class="cms-btn primary" id="save-home-btn">Save</button>
+          </div>
+          <p class="cms-status" id="status-home"></p>
+        </div>
+      </section>
+
       <!-- ==================== PROJECTS PANEL ==================== -->
-      <section class="cms-panel is-active" id="panel-projects">
+      <section class="cms-panel" id="panel-projects">
         <h2>Projects</h2>
-        <p class="cms-empty-note">Manage the 2D Illustrations, 3D Modelling, and Animation Showreel sections on the Projects page.</p>
+        <p class="cms-empty-note">Manage the 2D Illustrations, 3D Modelling, and Animation Showreel sections on the Projects page. Each is capped at 6 items.</p>
 
         <div class="cms-subtabs">
           <button class="cms-subtab-btn is-active" data-sub="sub-2d">2D Illustrations</button>
@@ -79,8 +102,9 @@
           </div>
         </div>
 
-        <!-- 3D Modelling -->
+        <!-- 3D Modelling — capped at 6 -->
         <div class="cms-subpanel" id="sub-3d">
+          <p class="cms-limit-note" id="limit-3d-note"></p>
           <div id="list-3d"></div>
           <button class="cms-btn primary" id="add-3d-btn">+ Add 3D Piece</button>
           <div class="cms-form" id="form-3d" hidden>
@@ -98,8 +122,9 @@
           </div>
         </div>
 
-        <!-- Animation Showreel — YouTube links, no file upload -->
+        <!-- Animation Showreel — YouTube links, capped at 6 -->
         <div class="cms-subpanel" id="sub-anim">
+          <p class="cms-limit-note" id="limit-anim-note"></p>
           <div id="list-anim"></div>
           <button class="cms-btn primary" id="add-anim-btn">+ Add Video</button>
           <div class="cms-form" id="form-anim" hidden>
@@ -164,7 +189,6 @@
             </div>
             <p class="cms-status" id="status-exhibition"></p>
 
-            <!-- Image management only shows once the exhibition has been saved once -->
             <div id="exhibition-images-section" hidden style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
               <h4 style="font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 1rem;">Showcase Images</h4>
               <div id="exhibition-images-list"></div>
@@ -174,6 +198,41 @@
               </div>
               <button class="cms-btn" id="add-exhibition-image-btn">+ Add Image</button>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== CONTACT PANEL ==================== -->
+      <section class="cms-panel" id="panel-contact">
+        <h2>Contact</h2>
+        <p class="cms-empty-note">Manage the resume/CV download and the social/contact link buttons on the Contact page.</p>
+
+        <div class="cms-form" style="margin-top: 1.5rem;">
+          <h3>Resume / CV Download</h3>
+          <div id="contact-files-current" class="cms-empty-note" style="margin-bottom: 0.75rem;"></div>
+          <div class="form-field"><label>Button text</label><input type="text" id="form-contact-button-label"></div>
+          <div class="form-field"><label>Upload Resume (PDF)</label><input type="file" id="form-contact-resume" accept="application/pdf"></div>
+          <div class="form-field"><label>Upload CV (PDF)</label><input type="file" id="form-contact-cv" accept="application/pdf"></div>
+          <div class="cms-form-actions">
+            <button class="cms-btn primary" id="save-contact-settings-btn">Save</button>
+          </div>
+          <p class="cms-status" id="status-contact-settings"></p>
+        </div>
+
+        <div class="cms-form" style="margin-top: 1.5rem;">
+          <h3>Link Buttons</h3>
+          <div id="list-contact-links"></div>
+          <button class="cms-btn primary" id="add-contact-link-btn">+ Add Link</button>
+          <div class="cms-form" id="form-contact-link" hidden style="background: var(--black);">
+            <h3 id="form-contact-link-title">Add Link</h3>
+            <input type="hidden" id="form-contact-link-id">
+            <div class="form-field"><label>Button text</label><input type="text" id="form-contact-link-label" placeholder="Instagram"></div>
+            <div class="form-field"><label>URL (use mailto:you@example.com for email)</label><input type="text" id="form-contact-link-url" placeholder="https://instagram.com/yourhandle"></div>
+            <div class="cms-form-actions">
+              <button class="cms-btn primary" id="save-contact-link-btn">Save</button>
+              <button class="cms-btn" id="cancel-contact-link-btn">Cancel</button>
+            </div>
+            <p class="cms-status" id="status-contact-link"></p>
           </div>
         </div>
       </section>

@@ -6,16 +6,8 @@
   <title>Contact — AgrabanArt</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* Spread out horizontally in a wrapping row instead of a narrow stacked column */
-    .contact-links-grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1rem;
-      max-width: 780px;
-      margin: 2.5rem auto 0;
-    }
-    .contact-links-grid a {
+    .contact-links-grid a,
+    .contact-links-grid button {
       display: flex;
       align-items: center;
       gap: 0.6rem;
@@ -26,6 +18,8 @@
       font-family: var(--font-mono);
       font-size: 0.88rem;
       letter-spacing: 0.03em;
+      background: transparent;
+      cursor: pointer;
       transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
     }
     .contact-links-grid a:hover,
@@ -39,6 +33,17 @@
 </head>
 <body>
 
+  <!--
+    ============================================================
+    COMMENT: The social/link buttons and the resume download button below
+    are both managed from cms.html (Contact tab) now — this file no longer
+    hardcodes individual platforms. site-data.js fetches them from Supabase
+    and renders them into #contact-links-grid and #resume-download-btn.
+    If nothing's been added yet in the CMS, you'll see the fallback notes
+    below instead.
+    ============================================================
+  -->
+
   <nav class="site-nav">
     <a href="index.html" class="brand">AGRABAN<span>ART</span></a>
     <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
@@ -51,8 +56,8 @@
   </nav>
 
   <header style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 9rem 2rem 4rem; max-width: 900px; margin: 0 auto;">
-    <!-- COMMENT: replace this div with <img class="hero-portrait" src="media/portrait.jpg" alt="Your name"> -->
-    <div class="hero-portrait reveal">PHOTO</div>
+    <!-- Same photo as the homepage — COMMENT: update both this and index.html's <img> together if you change photos -->
+    <img class="hero-portrait reveal" src="media\img\profile_img.png" alt="Your name">
 
     <p class="eyebrow reveal" style="margin-bottom: 1.25rem;">Let's Talk</p>
     <h1 class="reveal" style="font-family: var(--font-display); font-size: clamp(2.75rem, 8vw, 5rem); margin: 0;">Contact</h1>
@@ -60,29 +65,14 @@
       For commissions, collaborations, or just to say hi — reach out through any of the channels below.
     </p>
 
-    <!--
-      COMMENT: Resume/CV download.
-      1. Add your resume/CV file to this folder (e.g. resume.pdf).
-      2. Update the href below to point to it.
-      "download" attribute makes it save the file instead of opening in-browser.
-    -->
+    <!-- Resume/CV download button — label + files come from the CMS -->
     <div class="resume-btn-wrap reveal">
-      <a href="resume.pdf" download class="btn">Download Resume / CV</a>
+      <button id="resume-download-btn" class="btn" style="display:none;">Download Resume / CV</button>
     </div>
 
-    <!--
-      COMMENT: Replace each href="#" below with your real profile links.
-      Email is already wired to open the user's mail client — just swap
-      the address.
-    -->
-    <div class="contact-links-grid reveal">
-      <a href="mailto:youremail@example.com">Email <span>&rarr;</span></a>
-      <a href="#" target="_blank" rel="noopener">Instagram <span>&rarr;</span></a>
-      <a href="#" target="_blank" rel="noopener">ArtStation <span>&rarr;</span></a>
-      <a href="#" target="_blank" rel="noopener">Behance <span>&rarr;</span></a>
-      <a href="#" target="_blank" rel="noopener">TikTok <span>&rarr;</span></a>
-      <a href="#" target="_blank" rel="noopener">YouTube <span>&rarr;</span></a>
-      <a href="#" target="_blank" rel="noopener">Linktree <span>&rarr;</span></a>
+    <!-- Social/contact link buttons — populated by site-data.js -->
+    <div class="contact-links-grid reveal" id="contact-links-grid">
+      <p style="color: var(--muted); font-family: var(--font-mono); font-size: 0.85rem;">Nothing added yet — add links from the CMS.</p>
     </div>
   </header>
 
@@ -91,7 +81,10 @@
     <p>&copy; <span id="year"></span> Mohamad Raziqaiman Bin Mohd Yazid. All artwork rights reserved.</p>
   </footer>
 
+  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="config.js"></script>
   <script src="script.js"></script>
+  <script src="site-data.js"></script>
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>

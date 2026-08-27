@@ -155,9 +155,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Scroll-reveal for sections and slash dividers.
-  // COMMENT: this also needs to run again for content site-data.js injects
-  // after this initial pass — see revealNewElements() below, which
-  // site-data.js calls after rendering fetched content.
   const observer = 'IntersectionObserver' in window
     ? new IntersectionObserver(
         (entries) => {

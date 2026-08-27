@@ -1,10 +1,10 @@
 // ==========================================================================
 // AgrabanArt CMS — dashboard logic
 // ==========================================================================
-// COMMENT: this file is organized into sections — Auth, Navigation, Upload
-// helpers, Trash helpers, then one section per content type (Projects,
-// Awards, Exhibitions), and finally the Trash panel itself. Search for the
-// "====" banners to jump between them.
+// COMMENT: organized into sections — Auth, Navigation, Upload helpers,
+// Trash helpers, then one section per content type (Home, Projects,
+// Awards, Exhibitions, Contact), and finally the Trash panel itself.
+// Search for the "====" banners to jump between them.
 // ==========================================================================
 
 const client = window.supabase.createClient(AGRABAN_CONFIG.SUPABASE_URL, AGRABAN_CONFIG.SUPABASE_ANON_KEY);
@@ -38,11 +38,6 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
 
   const { error } = await client.auth.signInWithPassword({ email, password });
   if (error) {
-    // COMMENT: this also fires if your email logged in fine but isn't in
-    // the `admins` table yet — see supabase-schema.sql step 5. Supabase
-    // itself doesn't distinguish that case from a wrong password, so if
-    // login "succeeds" but every save fails with a permissions error,
-    // check that table.
     errorEl.textContent = error.message;
     return;
   }
@@ -85,15 +80,20 @@ function initDashboard() {
     });
   });
 
+  refreshHomeContent();
   refreshProjects('2d');
   refreshProjects('3d');
   refreshProjects('animation');
   refreshAwards();
   refreshExhibitions();
+  refreshContactSettings();
+  refreshContactLinks();
   refreshTrash();
+  wireHomeForm();
   wireProjectForms();
   wireAwardForm();
   wireExhibitionForm();
+  wireContactForms();
 }
 
 function escapeHtml(str) {
@@ -152,7 +152,56 @@ async function trashMedia({ storageKey, originalFilename, sourceTable, sourceId,
 }
 
 // ==========================================================================
+// HOME — background video + tagline (single-row settings table)
+// ==========================================================================
+
+let homeContentCache = null;
+
+async function refreshHomeContent() {
+  const { data, error } = await client.from('home_content').select('*').eq('id', 1).single();
+  if (error) {
+    console.error(error);
+    return;
+  }
+  homeContentCache = data;
+  document.getElementById('form-home-tagline').value = data.tagline || '';
+  const currentEl = document.getElementById('home-video-current');
+  currentEl.textContent = data.video_key ? `Current video: ${data.video_key}` : 'No video uploaded yet.';
+}
+
+function wireHomeForm() {
+  document.getElementById('save-home-btn').addEventListener('click', async () => {
+    const statusEl = document.getElementById('status-home');
+    statusEl.className = 'cms-status';
+    statusEl.textContent = 'Saving…';
+    try {
+      const payload = { tagline: document.getElementById('form-home-tagline').value.trim() };
+      const fileInput = document.getElementById('form-home-video');
+      if (fileInput.files[0]) {
+        const key = makeKey('home', fileInput.files[0]);
+        await uploadFile(fileInput.files[0], key);
+        if (homeContentCache && homeContentCache.video_key) {
+          await trashMedia({ storageKey: homeContentCache.video_key, originalFilename: 'homepage background video', sourceTable: 'home_content', sourceId: 1, sourceColumn: 'video_key' });
+        }
+        payload.video_key = key;
+      }
+      const { error } = await client.from('home_content').update(payload).eq('id', 1);
+      if (error) throw error;
+      statusEl.textContent = 'Saved.';
+      statusEl.className = 'cms-status success';
+      fileInput.value = '';
+      refreshHomeContent();
+      refreshTrash();
+    } catch (err) {
+      statusEl.textContent = err.message;
+      statusEl.className = 'cms-status error';
+    }
+  });
+}
+
+// ==========================================================================
 // PROJECTS (2D / 3D / Animation) — shared list rendering + per-category forms
+// All three categories are capped at 6 items (enforced here and in the DB).
 // ==========================================================================
 
 async function refreshProjects(category) {
@@ -191,14 +240,17 @@ async function refreshProjects(category) {
     });
   }
 
-  if (category === '2d') {
-    const note = document.getElementById('limit-2d-note');
-    note.textContent = `${data.length} of 6 used`;
-    document.getElementById('add-2d-btn').disabled = data.length >= 6;
-    document.getElementById('add-2d-btn').style.opacity = data.length >= 6 ? 0.4 : 1;
-    if (data.length >= 6) {
-      note.textContent += ' — maximum reached. Delete one to add another.';
-    }
+  // COMMENT: all three categories are capped at 6 — this note/disable
+  // logic applies the same way to 2D, 3D, and Animation.
+  const noteId = category === '2d' ? 'limit-2d-note' : category === '3d' ? 'limit-3d-note' : 'limit-anim-note';
+  const addBtnId = category === '2d' ? 'add-2d-btn' : category === '3d' ? 'add-3d-btn' : 'add-anim-btn';
+  const note = document.getElementById(noteId);
+  const addBtn = document.getElementById(addBtnId);
+  note.textContent = `${data.length} of 6 used`;
+  addBtn.disabled = data.length >= 6;
+  addBtn.style.opacity = data.length >= 6 ? 0.4 : 1;
+  if (data.length >= 6) {
+    note.textContent += ' — maximum reached. Delete one to add another.';
   }
 }
 
@@ -213,7 +265,6 @@ function openProjectForm(category, project) {
   if (category === 'animation') {
     document.getElementById('form-anim-link').value = project && project.youtube_id ? `https://www.youtube.com/watch?v=${project.youtube_id}` : '';
   }
-  // clear any previously-chosen files
   const fileInput = document.getElementById(`form-${suffix}-file`);
   if (fileInput) fileInput.value = '';
   if (category === '3d') document.getElementById('form-3d-model').value = '';
@@ -280,7 +331,6 @@ async function saveProjectForm(category) {
       if (fileInput.files[0]) {
         const key = makeKey(`projects/${category}`, fileInput.files[0]);
         await uploadFile(fileInput.files[0], key);
-        // old image gets trashed, not deleted immediately
         if (existing && existing.image_key) {
           await trashMedia({ storageKey: existing.image_key, originalFilename: title, sourceTable: 'projects', sourceId: id, sourceColumn: 'image_key' });
         }
@@ -303,14 +353,12 @@ async function saveProjectForm(category) {
       const { error } = await client.from('projects').update(payload).eq('id', id);
       if (error) throw error;
     } else {
-      // COMMENT: the 6-item 2D cap is also enforced in the database
-      // (see supabase-schema.sql) as a safety net, but we check here too
-      // so the CMS gives an immediate, friendly error instead of a raw
-      // database exception.
-      if (category === '2d') {
-        const { count } = await client.from('projects').select('*', { count: 'exact', head: true }).eq('category', '2d');
-        if (count >= 6) throw new Error('Maximum of 6 2D Illustrations reached.');
-      }
+      // COMMENT: the 6-item-per-category cap is also enforced in the
+      // database (see supabase-schema.sql) as a safety net, but checking
+      // here too gives an immediate, friendly error instead of a raw
+      // database exception. Applies to all three categories now.
+      const { count } = await client.from('projects').select('*', { count: 'exact', head: true }).eq('category', category);
+      if (count >= 6) throw new Error(`Maximum of 6 ${category === '2d' ? '2D Illustration' : category === '3d' ? '3D Modelling' : 'Animation'} items reached.`);
       const { error } = await client.from('projects').insert(payload);
       if (error) throw error;
     }
@@ -334,7 +382,6 @@ async function refreshAwards() {
   const { data: awards } = await client.from('awards').select('*').order('sort_order');
   const { data: exhibitions } = await client.from('exhibitions').select('*').order('sort_order');
 
-  // keep the "related exhibition" dropdown in sync
   const select = document.getElementById('form-award-exhibition');
   const currentValue = select.value;
   select.innerHTML = '<option value="">None</option>';
@@ -470,7 +517,7 @@ function openExhibitionForm(exhibition) {
     imagesSection.hidden = false;
     refreshExhibitionImages(exhibition.id);
   } else {
-    imagesSection.hidden = true; // save the exhibition first, then images can be added
+    imagesSection.hidden = true;
   }
 }
 
@@ -480,9 +527,9 @@ async function deleteExhibition(exhibition) {
   for (const img of images || []) {
     await trashMedia({ storageKey: img.image_key, originalFilename: exhibition.title, sourceTable: 'exhibition_images', sourceId: img.id, sourceColumn: 'image_key' });
   }
-  await client.from('exhibitions').delete().eq('id', exhibition.id); // cascades exhibition_images rows
+  await client.from('exhibitions').delete().eq('id', exhibition.id);
   refreshExhibitions();
-  refreshAwards(); // dropdown + any "linked" awards may reference this
+  refreshAwards();
   refreshTrash();
 }
 
@@ -561,6 +608,140 @@ function wireExhibitionForm() {
 }
 
 // ==========================================================================
+// CONTACT — resume/CV download settings + link buttons
+// ==========================================================================
+
+let contactSettingsCache = null;
+
+async function refreshContactSettings() {
+  const { data, error } = await client.from('contact_settings').select('*').eq('id', 1).single();
+  if (error) {
+    console.error(error);
+    return;
+  }
+  contactSettingsCache = data;
+  document.getElementById('form-contact-button-label').value = data.download_button_label || '';
+  const currentEl = document.getElementById('contact-files-current');
+  const parts = [];
+  parts.push(data.resume_key ? `Resume: ${data.resume_key}` : 'Resume: none uploaded');
+  parts.push(data.cv_key ? `CV: ${data.cv_key}` : 'CV: none uploaded');
+  currentEl.textContent = parts.join(' · ');
+}
+
+function wireContactForms() {
+  document.getElementById('save-contact-settings-btn').addEventListener('click', async () => {
+    const statusEl = document.getElementById('status-contact-settings');
+    statusEl.className = 'cms-status';
+    statusEl.textContent = 'Saving…';
+    try {
+      const payload = { download_button_label: document.getElementById('form-contact-button-label').value.trim() || 'Download Resume / CV' };
+
+      const resumeInput = document.getElementById('form-contact-resume');
+      if (resumeInput.files[0]) {
+        const key = makeKey('documents', resumeInput.files[0]);
+        await uploadFile(resumeInput.files[0], key);
+        if (contactSettingsCache && contactSettingsCache.resume_key) {
+          await trashMedia({ storageKey: contactSettingsCache.resume_key, originalFilename: 'resume', sourceTable: 'contact_settings', sourceId: 1, sourceColumn: 'resume_key' });
+        }
+        payload.resume_key = key;
+      }
+
+      const cvInput = document.getElementById('form-contact-cv');
+      if (cvInput.files[0]) {
+        const key = makeKey('documents', cvInput.files[0]);
+        await uploadFile(cvInput.files[0], key);
+        if (contactSettingsCache && contactSettingsCache.cv_key) {
+          await trashMedia({ storageKey: contactSettingsCache.cv_key, originalFilename: 'cv', sourceTable: 'contact_settings', sourceId: 1, sourceColumn: 'cv_key' });
+        }
+        payload.cv_key = key;
+      }
+
+      const { error } = await client.from('contact_settings').update(payload).eq('id', 1);
+      if (error) throw error;
+      statusEl.textContent = 'Saved.';
+      statusEl.className = 'cms-status success';
+      resumeInput.value = '';
+      cvInput.value = '';
+      refreshContactSettings();
+      refreshTrash();
+    } catch (err) {
+      statusEl.textContent = err.message;
+      statusEl.className = 'cms-status error';
+    }
+  });
+
+  document.getElementById('add-contact-link-btn').addEventListener('click', () => openContactLinkForm(null));
+  document.getElementById('cancel-contact-link-btn').addEventListener('click', () => { document.getElementById('form-contact-link').hidden = true; });
+  document.getElementById('save-contact-link-btn').addEventListener('click', async () => {
+    const statusEl = document.getElementById('status-contact-link');
+    statusEl.className = 'cms-status';
+    statusEl.textContent = 'Saving…';
+    try {
+      const id = document.getElementById('form-contact-link-id').value || null;
+      const payload = {
+        label: document.getElementById('form-contact-link-label').value.trim() || 'Link',
+        url: document.getElementById('form-contact-link-url').value.trim() || '#',
+      };
+      const { error } = id
+        ? await client.from('contact_links').update(payload).eq('id', id)
+        : await client.from('contact_links').insert(payload);
+      if (error) throw error;
+      statusEl.textContent = 'Saved.';
+      statusEl.className = 'cms-status success';
+      refreshContactLinks();
+      setTimeout(() => { document.getElementById('form-contact-link').hidden = true; }, 600);
+    } catch (err) {
+      statusEl.textContent = err.message;
+      statusEl.className = 'cms-status error';
+    }
+  });
+}
+
+function openContactLinkForm(link) {
+  document.getElementById('form-contact-link').hidden = false;
+  document.getElementById('form-contact-link-title').textContent = link ? `Edit ${link.label}` : 'Add Link';
+  document.getElementById('form-contact-link-id').value = link ? link.id : '';
+  document.getElementById('form-contact-link-label').value = link ? link.label : '';
+  document.getElementById('form-contact-link-url').value = link ? link.url : '';
+  document.getElementById('status-contact-link').textContent = '';
+}
+
+async function refreshContactLinks() {
+  const { data, error } = await client.from('contact_links').select('*').order('sort_order');
+  if (error) {
+    console.error(error);
+    return;
+  }
+  const container = document.getElementById('list-contact-links');
+  container.innerHTML = '';
+  if (!data.length) {
+    container.innerHTML = '<p class="cms-empty-note">Nothing added yet.</p>';
+    return;
+  }
+  data.forEach((link) => {
+    const row = document.createElement('div');
+    row.className = 'cms-item-card';
+    row.innerHTML = `
+      <div class="cms-item-info">
+        <h4>${escapeHtml(link.label)}</h4>
+        <p>${escapeHtml(link.url)}</p>
+      </div>
+      <div class="cms-item-actions">
+        <button class="cms-btn edit-btn">Edit</button>
+        <button class="cms-btn danger delete-btn">Delete</button>
+      </div>
+    `;
+    row.querySelector('.edit-btn').addEventListener('click', () => openContactLinkForm(link));
+    row.querySelector('.delete-btn').addEventListener('click', async () => {
+      if (!confirm(`Delete "${link.label}"?`)) return;
+      await client.from('contact_links').delete().eq('id', link.id);
+      refreshContactLinks();
+    });
+    container.appendChild(row);
+  });
+}
+
+// ==========================================================================
 // TRASH — restore or permanently delete previously-replaced/removed media
 // ==========================================================================
 
@@ -619,10 +800,12 @@ async function restoreFromTrash(item) {
   }
   await client.from('media_trash').delete().eq('id', item.id);
   refreshTrash();
+  refreshHomeContent();
   refreshProjects('2d');
   refreshProjects('3d');
   refreshProjects('animation');
   refreshExhibitions();
+  refreshContactSettings();
 }
 
 async function deleteForever(item) {

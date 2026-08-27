@@ -2,10 +2,11 @@
 // AgrabanArt — live content loader
 // ==========================================================================
 // COMMENT: this file fetches data from Supabase and fills in the empty
-// containers left in projects.html and events.html. It only runs the
-// pieces relevant to whichever page it's loaded on (it checks whether
-// each container exists before doing anything with it), so the same file
-// works across both pages without errors.
+// containers left in index.html, projects.html, events.html, and
+// contact.html. It only runs the pieces relevant to whichever page it's
+// loaded on (it checks whether each container exists before doing
+// anything with it), so the same file works across all pages without
+// errors.
 //
 // You should not normally need to edit this file — content changes happen
 // through cms.html, which writes to the same Supabase tables this file
@@ -14,7 +15,7 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Guard: if config.js hasn't been filled in yet, don't attempt to fetch —
-  // just leave the "Nothing added yet" placeholders showing.
+  // just leave the fallback placeholders showing.
   if (!window.AGRABAN_CONFIG || AGRABAN_CONFIG.SUPABASE_URL.includes('your-project-ref')) {
     console.warn('AgrabanArt: config.js is still using placeholder values — skipping live data fetch.');
     return;
@@ -22,6 +23,33 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const client = window.supabase.createClient(AGRABAN_CONFIG.SUPABASE_URL, AGRABAN_CONFIG.SUPABASE_ANON_KEY);
   const mediaUrl = (key) => `${AGRABAN_CONFIG.MEDIA_PUBLIC_BASE_URL}/${key}`;
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+
+  // ------------------------------------------------------------------
+  // HOME PAGE — background video + tagline
+  // ------------------------------------------------------------------
+  const heroVideo = document.getElementById('hero-bg-video');
+  const heroTagline = document.getElementById('hero-tagline');
+
+  if (heroVideo || heroTagline) {
+    const { data, error } = await client.from('home_content').select('*').eq('id', 1).single();
+    if (error) {
+      console.error('AgrabanArt: failed to load home content', error);
+    } else if (data) {
+      if (heroVideo && data.video_key) {
+        heroVideo.src = mediaUrl(data.video_key);
+        heroVideo.style.display = 'block';
+      }
+      if (heroTagline && data.tagline) {
+        heroTagline.textContent = data.tagline;
+      }
+    }
+  }
 
   // ------------------------------------------------------------------
   // Builds one clickable project tile (used for both 2D and 3D galleries)
@@ -49,12 +77,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     a.appendChild(mediaBox);
     a.appendChild(caption);
     return a;
-  }
-
-  function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str || '';
-    return div.innerHTML;
   }
 
   // ------------------------------------------------------------------
@@ -97,17 +119,12 @@ document.addEventListener('DOMContentLoaded', async () => {
           });
         }
 
-        // Feed the same 3D items into the interactive model carousel —
-        // only entries with a model_key actually show a model, others
-        // fall back to the carousel's own placeholder text per-slide.
         const modelData = items
           .filter((p) => p.model_key)
           .map((p) => ({ title: p.title, src: mediaUrl(p.model_key) }));
         window.AgrabanCarousels?.updateModels(modelData);
       }
 
-      // Animation showreel carousel — pulled from category 'animation',
-      // each using a YouTube ID rather than an uploaded file.
       const animationItems = by('animation')
         .filter((p) => p.youtube_id)
         .map((p) => ({ title: p.title, type: 'youtube', id: p.youtube_id }));
@@ -174,5 +191,60 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
       }
     }
+  }
+
+  // ------------------------------------------------------------------
+  // CONTACT PAGE — link buttons + resume/CV download
+  // ------------------------------------------------------------------
+  const contactLinksGrid = document.getElementById('contact-links-grid');
+  const resumeBtn = document.getElementById('resume-download-btn');
+
+  if (contactLinksGrid || resumeBtn) {
+    const [{ data: links, error: linksErr }, { data: settings, error: settingsErr }] = await Promise.all([
+      client.from('contact_links').select('*').order('sort_order', { ascending: true }),
+      client.from('contact_settings').select('*').eq('id', 1).single(),
+    ]);
+
+    if (linksErr) console.error('AgrabanArt: failed to load contact links', linksErr);
+    if (settingsErr) console.error('AgrabanArt: failed to load contact settings', settingsErr);
+
+    if (contactLinksGrid && links && links.length) {
+      contactLinksGrid.innerHTML = '';
+      links.forEach((link) => {
+        const a = document.createElement('a');
+        a.href = link.url;
+        if (!link.url.startsWith('mailto:')) {
+          a.target = '_blank';
+          a.rel = 'noopener';
+        }
+        a.innerHTML = `${escapeHtml(link.label)} <span>&rarr;</span>`;
+        contactLinksGrid.appendChild(a);
+        window.AgrabanReveal?.observe(a);
+      });
+    }
+
+    if (resumeBtn && settings) {
+      resumeBtn.textContent = settings.download_button_label || 'Download Resume / CV';
+      if (settings.resume_key || settings.cv_key) {
+        resumeBtn.style.display = 'inline-flex';
+        resumeBtn.addEventListener('click', () => {
+          // COMMENT: triggers a download for each file that's actually
+          // been uploaded — if only one of resume/CV is set, just that
+          // one downloads.
+          if (settings.resume_key) triggerDownload(mediaUrl(settings.resume_key), 'resume.pdf');
+          if (settings.cv_key) triggerDownload(mediaUrl(settings.cv_key), 'cv.pdf');
+        });
+      }
+    }
+  }
+
+  function triggerDownload(url, filename) {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   }
 });

@@ -8,6 +8,16 @@
 </head>
 <body>
 
+  <!--
+    ============================================================
+    COMMENT: The background video and the tagline paragraph below are now
+    live-editable from cms.html (Home tab). They start out showing this
+    fallback content and get swapped by site-data.js once it fetches from
+    Supabase. The portrait photo and full name are still hand-edited here
+    directly (search "COMMENT" below to find them).
+    ============================================================
+  -->
+
   <nav class="site-nav">
     <a href="index.html" class="brand">AGRABAN<span>ART</span></a>
     <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
@@ -20,15 +30,8 @@
   </nav>
 
   <header class="hero">
-    <!--
-      COMMENT: Background reel placeholder.
-      Replace the <source src="..."> below with your compiled animation/artwork
-      loop (an .mp4 works best — keep it muted, it autoplays without sound).
-      poster="" can point to a fallback image shown before the video loads.
-    -->
-    <video class="hero-bg-video" autoplay muted loop playsinline poster="">
-      <source src="media/showreel-bg.mp4" type="video/mp4">
-    </video>
+    <!-- Filled in by site-data.js once a video is uploaded via the CMS -->
+    <video class="hero-bg-video" id="hero-bg-video" autoplay muted loop playsinline style="display:none;"></video>
     <div class="hero-overlay"></div>
 
     <div class="hero-content">
@@ -46,8 +49,8 @@
         Mohamad Raziqaiman Bin Mohd Yazid
       </p>
 
-      <p class="reveal" style="max-width: 480px; color: var(--muted); margin: 1.75rem 0 2.5rem;">
-        <!-- COMMENT: replace this line with your own short artist statement / tagline -->
+      <!-- CMS-editable tagline — falls back to this text until Supabase has a saved value -->
+      <p class="reveal" id="hero-tagline" style="max-width: 480px; color: var(--muted); margin: 1.75rem 0 2.5rem;">
         Bringing imagined worlds to life through characters, creatures and visual storytelling
       </p>
 
@@ -63,7 +66,11 @@
     <p>&copy; <span id="year"></span> Mohamad Raziqaiman Bin Mohd Yazid. All artwork rights reserved.</p>
   </footer>
 
+  <!-- COMMENT: Supabase client library — used by site-data.js to fetch the live video/tagline -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="config.js"></script>
   <script src="script.js"></script>
+  <script src="site-data.js"></script>
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>
