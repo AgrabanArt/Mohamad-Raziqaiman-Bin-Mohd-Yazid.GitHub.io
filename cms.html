@@ -7,6 +7,54 @@
   <meta name="robots" content="noindex, nofollow">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="cms.css">
+  <!-- COMMENT: Cropper.js — powers the fixed-ratio thumbnail crop tool below.
+       Loaded via CDN, no install needed. -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+  <style>
+    .crop-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 10, 10, 0.92);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .crop-modal-inner {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      max-width: 520px;
+      width: 100%;
+    }
+    .crop-modal-inner h3 {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      margin: 0 0 0.5rem;
+    }
+    .crop-modal-inner p {
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      margin: 0 0 1rem;
+    }
+    .crop-image-wrap {
+      max-height: 60vh;
+      overflow: hidden;
+      background: var(--black);
+    }
+    .crop-image-wrap img {
+      display: block;
+      max-width: 100%;
+    }
+    .project-images-section {
+      margin-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+    }
+  </style>
 </head>
 <body class="cms-body">
 
@@ -93,12 +141,28 @@
             <input type="hidden" id="form-2d-id">
             <div class="form-field"><label>Title</label><input type="text" id="form-2d-name"></div>
             <div class="form-field"><label>Description (shown on hover + detail page)</label><textarea id="form-2d-desc"></textarea></div>
-            <div class="form-field"><label>Image file</label><input type="file" id="form-2d-file" accept="image/*"></div>
+            <div class="form-field">
+              <label>Image file</label>
+              <input type="file" id="form-2d-file" accept="image/*">
+              <p class="cms-limit-note" style="margin: 0.4rem 0 0;">You'll be asked to crop this to the gallery thumbnail shape (4:5) after selecting it — the full uncropped image is still used on the project's detail page.</p>
+            </div>
+            <div class="form-field"><label>LinkedIn post link (optional — shown at the bottom of the detail page)</label><input type="url" id="form-2d-linkedin" placeholder="https://www.linkedin.com/posts/..."></div>
             <div class="cms-form-actions">
               <button class="cms-btn primary" id="save-2d-btn">Save</button>
               <button class="cms-btn" id="cancel-2d-btn">Cancel</button>
             </div>
             <p class="cms-status" id="status-2d"></p>
+
+            <div class="project-images-section" id="images-2d-section" hidden>
+              <h4 style="font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 1rem;">Support Images (up to 3)</h4>
+              <p class="cms-limit-note" id="limit-images-2d-note"></p>
+              <div id="list-images-2d"></div>
+              <div class="form-field" style="margin-top: 1rem;">
+                <label>Add image</label>
+                <input type="file" id="form-2d-support-file" accept="image/*">
+              </div>
+              <button class="cms-btn" id="add-support-2d-btn">+ Add Support Image</button>
+            </div>
           </div>
         </div>
 
@@ -112,13 +176,29 @@
             <input type="hidden" id="form-3d-id">
             <div class="form-field"><label>Title</label><input type="text" id="form-3d-name"></div>
             <div class="form-field"><label>Description</label><textarea id="form-3d-desc"></textarea></div>
-            <div class="form-field"><label>Rendered still image</label><input type="file" id="form-3d-file" accept="image/*"></div>
+            <div class="form-field">
+              <label>Rendered still image</label>
+              <input type="file" id="form-3d-file" accept="image/*">
+              <p class="cms-limit-note" style="margin: 0.4rem 0 0;">You'll be asked to crop this to the gallery thumbnail shape (4:5) after selecting it — the full uncropped image is still used on the project's detail page.</p>
+            </div>
             <div class="form-field"><label>Interactive 3D model file (.glb / .gltf) — optional</label><input type="file" id="form-3d-model" accept=".glb,.gltf"></div>
+            <div class="form-field"><label>LinkedIn post link (optional — shown at the bottom of the detail page)</label><input type="url" id="form-3d-linkedin" placeholder="https://www.linkedin.com/posts/..."></div>
             <div class="cms-form-actions">
               <button class="cms-btn primary" id="save-3d-btn">Save</button>
               <button class="cms-btn" id="cancel-3d-btn">Cancel</button>
             </div>
             <p class="cms-status" id="status-3d"></p>
+
+            <div class="project-images-section" id="images-3d-section" hidden>
+              <h4 style="font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 1rem;">Support Images (up to 3)</h4>
+              <p class="cms-limit-note" id="limit-images-3d-note"></p>
+              <div id="list-images-3d"></div>
+              <div class="form-field" style="margin-top: 1rem;">
+                <label>Add image</label>
+                <input type="file" id="form-3d-support-file" accept="image/*">
+              </div>
+              <button class="cms-btn" id="add-support-3d-btn">+ Add Support Image</button>
+            </div>
           </div>
         </div>
 
@@ -249,6 +329,21 @@
       </section>
 
     </main>
+  </div>
+
+  <!-- ==================== CROP MODAL (shared by 2D and 3D image uploads) ==================== -->
+  <div class="crop-modal" id="crop-modal" hidden>
+    <div class="crop-modal-inner">
+      <h3>Crop Thumbnail</h3>
+      <p>Position and size the crop area — this fixed 4:5 shape is what shows in the gallery grid. The full original image (uncropped) is still used on the project's detail page.</p>
+      <div class="crop-image-wrap">
+        <img id="crop-image" src="" alt="">
+      </div>
+      <div class="cms-form-actions" style="margin-top: 1rem;">
+        <button class="cms-btn primary" id="crop-confirm-btn">Use This Crop</button>
+        <button class="cms-btn" id="crop-cancel-btn">Cancel</button>
+      </div>
+    </div>
   </div>
 
   <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>

@@ -60,9 +60,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     a.href = `project-template.html?id=${project.id}`;
 
     const mediaBox = document.createElement('div');
-    if (project.image_key) {
+    const thumbSrc = project.thumbnail_key || project.image_key;
+    if (thumbSrc) {
       const img = document.createElement('img');
-      img.src = mediaUrl(project.image_key);
+      img.src = mediaUrl(thumbSrc);
       img.alt = project.title;
       mediaBox.appendChild(img);
     } else {

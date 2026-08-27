@@ -222,6 +222,36 @@ as $$
   select exists (select 1 from admins where user_id = auth.uid());
 $$;
 
+-- Additional columns for the project detail page:
+--   thumbnail_key   a separately-cropped image (fixed 4:5) used specifically
+--                   for the gallery tile — kept distinct from image_key so
+--                   the thumbnail crop and the detail-page hero image can
+--                   show different framing of the same piece
+--   linkedin_url     optional link to a related LinkedIn post, shown at the
+--                     bottom of the project detail page
+alter table projects add column if not exists thumbnail_key text;
+alter table projects add column if not exists linkedin_url text;
+
+-- ----------------------------------------------------------------------------
+-- PROJECT_IMAGES — up to 3 extra "support" images shown on a project's
+-- detail page (project-template.html), below the main hero image.
+-- ----------------------------------------------------------------------------
+create table if not exists project_images (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references projects (id) on delete cascade,
+  image_key text not null,
+  sort_order int not null default 0,
+  created_at timestamptz not null default now()
+);
+alter table project_images enable row level security;
+
+drop policy if exists "public read project_images" on project_images;
+create policy "public read project_images" on project_images for select using (true);
+
+drop policy if exists "admin write project_images" on project_images;
+create policy "admin write project_images" on project_images for all
+  using (is_admin()) with check (is_admin());
+
 -- Public read access on content tables
 drop policy if exists "public read projects" on projects;
 create policy "public read projects" on projects for select using (true);

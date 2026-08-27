@@ -82,6 +82,8 @@ Open `cms.html` and log in with the admin email/password from step 1.3.
 
 - **Home tab** — upload the looping background video (.mp4) and edit the tagline text shown under the site title.
 - **Projects tab** — three sub-tabs, **each capped at 6 items**: 2D Illustrations, 3D Modelling (still image + optional `.glb`/`.gltf`), Animation Showreel (YouTube link, no file upload).
+  - For 2D/3D pieces: uploading an image opens a crop tool fixed to the gallery tile's 4:5 shape — that crop is used for the thumbnail specifically. The original, uncropped image is kept separately and shown at 16:9 on the project's detail page.
+  - Each 2D/3D piece can also have up to 3 "support images" (added after the first save) shown on its detail page, and an optional LinkedIn post link shown at the bottom of that page.
 - **Events & Achievements tab** — Awards (title, description, year, optional link to a related exhibition) and Exhibitions & Competitions (title, description, image gallery).
 - **Contact tab** — upload your Resume and/or CV (PDF) and set the download button's label; clicking that button on the live site downloads whichever of the two files are set. Also manage the row of link buttons (label + URL) — use `mailto:you@example.com` as the URL for an email button.
 - **Trash tab** — replaced/removed media lands here first. **Restore** puts it back; **Delete Permanently** removes it from R2 for good.

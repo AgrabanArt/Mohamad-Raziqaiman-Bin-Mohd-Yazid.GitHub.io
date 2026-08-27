@@ -254,6 +254,74 @@ async function refreshProjects(category) {
   }
 }
 
+// ---------------------------------------------------------------------
+// CROP MODAL — shared by the 2D and 3D image uploads. When a file is
+// selected, we open this modal so the user can position a fixed-ratio
+// (4:5) crop for the gallery thumbnail. The ORIGINAL file is kept as-is
+// and uploaded separately for the detail-page hero image (which just
+// displays at 16:9 via CSS, no manual crop needed there).
+// ---------------------------------------------------------------------
+const pendingCrops = {}; // keyed by file input id -> { original: File, thumbnailBlob: Blob }
+let activeCropper = null;
+let activeCropInputId = null;
+
+function openCropModal(inputId, file) {
+  activeCropInputId = inputId;
+  const modal = document.getElementById('crop-modal');
+  const img = document.getElementById('crop-image');
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    img.src = e.target.result;
+    modal.hidden = false;
+    if (activeCropper) activeCropper.destroy();
+    activeCropper = new Cropper(img, {
+      aspectRatio: 4 / 5,
+      viewMode: 1,
+      autoCropArea: 1,
+    });
+  };
+  reader.readAsDataURL(file);
+}
+
+function closeCropModal() {
+  document.getElementById('crop-modal').hidden = true;
+  if (activeCropper) {
+    activeCropper.destroy();
+    activeCropper = null;
+  }
+  activeCropInputId = null;
+}
+
+function wireCropModal() {
+  document.getElementById('crop-confirm-btn').addEventListener('click', () => {
+    if (!activeCropper || !activeCropInputId) return;
+    activeCropper.getCroppedCanvas({ width: 800, height: 1000 }).toBlob((blob) => {
+      const inputId = activeCropInputId;
+      pendingCrops[inputId].thumbnailBlob = blob;
+      closeCropModal();
+    }, 'image/jpeg', 0.9);
+  });
+
+  document.getElementById('crop-cancel-btn').addEventListener('click', () => {
+    // COMMENT: cancelling the crop clears the pending selection for this
+    // field entirely — the user can re-choose the file to try again.
+    if (activeCropInputId) {
+      delete pendingCrops[activeCropInputId];
+      document.getElementById(activeCropInputId).value = '';
+    }
+    closeCropModal();
+  });
+
+  ['form-2d-file', 'form-3d-file'].forEach((inputId) => {
+    document.getElementById(inputId).addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      pendingCrops[inputId] = { original: file, thumbnailBlob: null };
+      openCropModal(inputId, file);
+    });
+  });
+}
+
 function openProjectForm(category, project) {
   const suffix = category === '2d' ? '2d' : category === '3d' ? '3d' : 'anim';
   document.getElementById(`form-${suffix}`).hidden = false;
@@ -266,8 +334,24 @@ function openProjectForm(category, project) {
     document.getElementById('form-anim-link').value = project && project.youtube_id ? `https://www.youtube.com/watch?v=${project.youtube_id}` : '';
   }
   const fileInput = document.getElementById(`form-${suffix}-file`);
-  if (fileInput) fileInput.value = '';
+  if (fileInput) {
+    fileInput.value = '';
+    delete pendingCrops[`form-${suffix}-file`];
+  }
   if (category === '3d') document.getElementById('form-3d-model').value = '';
+
+  // LinkedIn field + support-images section only apply to 2D/3D
+  if (category === '2d' || category === '3d') {
+    document.getElementById(`form-${suffix}-linkedin`).value = project ? project.linkedin_url || '' : '';
+    const imagesSection = document.getElementById(`images-${suffix}-section`);
+    if (project) {
+      imagesSection.hidden = false;
+      refreshProjectImages(suffix, project.id);
+    } else {
+      imagesSection.hidden = true; // save the project first, then support images can be added
+    }
+  }
+
   document.getElementById(`form-${suffix}`)._editingProject = project || null;
 }
 
@@ -285,8 +369,16 @@ async function deleteProject(category, project) {
   if (project.image_key) {
     await trashMedia({ storageKey: project.image_key, originalFilename: project.title, sourceTable: 'projects', sourceId: project.id, sourceColumn: 'image_key' });
   }
+  if (project.thumbnail_key) {
+    await trashMedia({ storageKey: project.thumbnail_key, originalFilename: project.title, sourceTable: 'projects', sourceId: project.id, sourceColumn: 'thumbnail_key' });
+  }
   if (project.model_key) {
     await trashMedia({ storageKey: project.model_key, originalFilename: project.title, sourceTable: 'projects', sourceId: project.id, sourceColumn: 'model_key' });
+  }
+  // Support images get trashed too — the DB rows cascade-delete automatically
+  const { data: supportImages } = await client.from('project_images').select('*').eq('project_id', project.id);
+  for (const img of supportImages || []) {
+    await trashMedia({ storageKey: img.image_key, originalFilename: project.title, sourceTable: 'project_images', sourceId: img.id, sourceColumn: 'image_key' });
   }
   await client.from('projects').delete().eq('id', project.id);
   refreshProjects(category);
@@ -305,6 +397,9 @@ function wireProjectForms() {
   document.getElementById('save-2d-btn').addEventListener('click', () => saveProjectForm('2d'));
   document.getElementById('save-3d-btn').addEventListener('click', () => saveProjectForm('3d'));
   document.getElementById('save-anim-btn').addEventListener('click', () => saveProjectForm('animation'));
+
+  wireCropModal();
+  wireSupportImages();
 }
 
 async function saveProjectForm(category) {
@@ -327,15 +422,31 @@ async function saveProjectForm(category) {
       if (link && !ytId) throw new Error('Could not read a video ID from that YouTube link.');
       payload.youtube_id = ytId || null;
     } else {
-      const fileInput = document.getElementById(`form-${suffix}-file`);
-      if (fileInput.files[0]) {
-        const key = makeKey(`projects/${category}`, fileInput.files[0]);
-        await uploadFile(fileInput.files[0], key);
+      payload.linkedin_url = document.getElementById(`form-${suffix}-linkedin`).value.trim() || null;
+
+      const fileInputId = `form-${suffix}-file`;
+      const pending = pendingCrops[fileInputId];
+      if (pending && pending.original) {
+        if (!pending.thumbnailBlob) throw new Error('Finish cropping the thumbnail before saving (or cancel and reselect the image).');
+
+        // Upload the original (used at 16:9 on the detail page) and the
+        // cropped thumbnail (used at 4:5 in the gallery grid) separately.
+        const originalKey = makeKey(`projects/${category}`, pending.original);
+        await uploadFile(pending.original, originalKey);
         if (existing && existing.image_key) {
           await trashMedia({ storageKey: existing.image_key, originalFilename: title, sourceTable: 'projects', sourceId: id, sourceColumn: 'image_key' });
         }
-        payload.image_key = key;
+        payload.image_key = originalKey;
+
+        const thumbFile = new File([pending.thumbnailBlob], `thumb-${pending.original.name}`, { type: 'image/jpeg' });
+        const thumbKey = makeKey(`projects/${category}`, thumbFile);
+        await uploadFile(thumbFile, thumbKey);
+        if (existing && existing.thumbnail_key) {
+          await trashMedia({ storageKey: existing.thumbnail_key, originalFilename: title, sourceTable: 'projects', sourceId: id, sourceColumn: 'thumbnail_key' });
+        }
+        payload.thumbnail_key = thumbKey;
       }
+
       if (category === '3d') {
         const modelInput = document.getElementById('form-3d-model');
         if (modelInput.files[0]) {
@@ -349,6 +460,7 @@ async function saveProjectForm(category) {
       }
     }
 
+    let savedId = id;
     if (id) {
       const { error } = await client.from('projects').update(payload).eq('id', id);
       if (error) throw error;
@@ -359,19 +471,91 @@ async function saveProjectForm(category) {
       // database exception. Applies to all three categories now.
       const { count } = await client.from('projects').select('*', { count: 'exact', head: true }).eq('category', category);
       if (count >= 6) throw new Error(`Maximum of 6 ${category === '2d' ? '2D Illustration' : category === '3d' ? '3D Modelling' : 'Animation'} items reached.`);
-      const { error } = await client.from('projects').insert(payload);
+      const { data, error } = await client.from('projects').insert(payload).select().single();
       if (error) throw error;
+      savedId = data.id;
+      document.getElementById(`form-${suffix}-id`).value = data.id;
     }
 
+    delete pendingCrops[`form-${suffix}-file`];
     statusEl.textContent = 'Saved.';
     statusEl.className = 'cms-status success';
     refreshProjects(category);
     refreshTrash();
-    setTimeout(() => closeProjectForm(suffix), 600);
+
+    if (category === '2d' || category === '3d') {
+      // Keep the form open so support images can be added right after
+      // the first save, instead of auto-closing like before.
+      document.getElementById(`images-${suffix}-section`).hidden = false;
+      refreshProjectImages(suffix, savedId);
+    } else {
+      setTimeout(() => closeProjectForm(suffix), 600);
+    }
   } catch (err) {
     statusEl.textContent = err.message;
     statusEl.className = 'cms-status error';
   }
+}
+
+// ---------------------------------------------------------------------
+// SUPPORT IMAGES — up to 3 extra images per 2D/3D project, shown on its
+// detail page. Same pattern as exhibition images: only manageable once
+// the project itself has been saved once (has an id).
+// ---------------------------------------------------------------------
+
+async function refreshProjectImages(suffix, projectId) {
+  const { data } = await client.from('project_images').select('*').eq('project_id', projectId).order('sort_order');
+  const list = document.getElementById(`list-images-${suffix}`);
+  const note = document.getElementById(`limit-images-${suffix}-note`);
+  const addBtn = document.getElementById(`add-support-${suffix}-btn`);
+  list.innerHTML = '';
+
+  const count = (data || []).length;
+  note.textContent = `${count} of 3 used`;
+  addBtn.disabled = count >= 3;
+  addBtn.style.opacity = count >= 3 ? 0.4 : 1;
+
+  if (!count) {
+    list.innerHTML = '<p class="cms-empty-note">No support images yet.</p>';
+    return;
+  }
+  data.forEach((img) => {
+    const row = document.createElement('div');
+    row.className = 'cms-item-card';
+    row.innerHTML = `
+      <img class="cms-item-thumb" src="${mediaUrl(img.image_key)}" alt="">
+      <div class="cms-item-info"><p>${escapeHtml(img.image_key)}</p></div>
+      <div class="cms-item-actions"><button class="cms-btn danger delete-btn">Delete</button></div>
+    `;
+    row.querySelector('.delete-btn').addEventListener('click', async () => {
+      if (!confirm('Move this image to Trash?')) return;
+      await trashMedia({ storageKey: img.image_key, originalFilename: img.image_key, sourceTable: 'project_images', sourceId: img.id, sourceColumn: 'image_key' });
+      await client.from('project_images').delete().eq('id', img.id);
+      refreshProjectImages(suffix, projectId);
+      refreshTrash();
+    });
+    list.appendChild(row);
+  });
+}
+
+function wireSupportImages() {
+  ['2d', '3d'].forEach((suffix) => {
+    document.getElementById(`add-support-${suffix}-btn`).addEventListener('click', async () => {
+      const projectId = document.getElementById(`form-${suffix}-id`).value;
+      const fileInput = document.getElementById(`form-${suffix}-support-file`);
+      if (!fileInput.files[0] || !projectId) return;
+      const { count } = await client.from('project_images').select('*', { count: 'exact', head: true }).eq('project_id', projectId);
+      if (count >= 3) {
+        alert('Maximum of 3 support images reached — delete one to add another.');
+        return;
+      }
+      const key = makeKey(`projects/${suffix}/support`, fileInput.files[0]);
+      await uploadFile(fileInput.files[0], key);
+      await client.from('project_images').insert({ project_id: projectId, image_key: key });
+      fileInput.value = '';
+      refreshProjectImages(suffix, projectId);
+    });
+  });
 }
 
 // ==========================================================================
