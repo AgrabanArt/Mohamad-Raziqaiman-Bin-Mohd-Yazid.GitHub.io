@@ -166,10 +166,32 @@ async function refreshHomeContent() {
   homeContentCache = data;
   document.getElementById('form-home-tagline').value = data.tagline || '';
   const currentEl = document.getElementById('home-video-current');
-  currentEl.textContent = data.video_key ? `Current video: ${data.video_key}` : 'No video uploaded yet.';
+  const removeBtn = document.getElementById('remove-home-video-btn');
+  if (data.video_key) {
+    currentEl.textContent = `Current video: ${data.video_key}`;
+    removeBtn.style.display = 'inline-block';
+  } else {
+    currentEl.textContent = 'No video uploaded yet.';
+    removeBtn.style.display = 'none';
+  }
+}
+
+async function removeHomeVideo() {
+  if (!homeContentCache || !homeContentCache.video_key) return;
+  if (!confirm('Remove the background video? It will be moved to Trash and the homepage will show no video until you upload a new one.')) return;
+  await trashMedia({ storageKey: homeContentCache.video_key, originalFilename: 'homepage background video', sourceTable: 'home_content', sourceId: 1, sourceColumn: 'video_key' });
+  const { error } = await client.from('home_content').update({ video_key: null }).eq('id', 1);
+  if (error) {
+    alert('Could not remove video: ' + error.message);
+    return;
+  }
+  refreshHomeContent();
+  refreshTrash();
 }
 
 function wireHomeForm() {
+  document.getElementById('remove-home-video-btn').addEventListener('click', removeHomeVideo);
+
   document.getElementById('save-home-btn').addEventListener('click', async () => {
     const statusEl = document.getElementById('status-home');
     statusEl.className = 'cms-status';
@@ -256,31 +278,43 @@ async function refreshProjects(category) {
 
 // ---------------------------------------------------------------------
 // CROP MODAL — shared by the 2D and 3D image uploads. When a file is
-// selected, we open this modal so the user can position a fixed-ratio
-// (4:5) crop for the gallery thumbnail. The ORIGINAL file is kept as-is
-// and uploaded separately for the detail-page hero image (which just
-// displays at 16:9 via CSS, no manual crop needed there).
+// selected, this walks the user through TWO crops from the same source
+// image: first a fixed 4:5 crop for the gallery thumbnail, then a fixed
+// 16:9 crop for the detail page's main image. Both crops are stored and
+// uploaded separately — nothing here uses the raw original file anymore.
 // ---------------------------------------------------------------------
-const pendingCrops = {}; // keyed by file input id -> { original: File, thumbnailBlob: Blob }
+const pendingCrops = {}; // keyed by file input id -> { original: File, thumbnailBlob: Blob, mainBlob: Blob }
 let activeCropper = null;
 let activeCropInputId = null;
+let activeCropStep = null; // 'thumbnail' | 'main'
 
 function openCropModal(inputId, file) {
   activeCropInputId = inputId;
+  activeCropStep = 'thumbnail';
   const modal = document.getElementById('crop-modal');
   const img = document.getElementById('crop-image');
   const reader = new FileReader();
   reader.onload = (e) => {
     img.src = e.target.result;
     modal.hidden = false;
-    if (activeCropper) activeCropper.destroy();
-    activeCropper = new Cropper(img, {
-      aspectRatio: 4 / 5,
-      viewMode: 1,
-      autoCropArea: 1,
-    });
+    startCropStep();
   };
   reader.readAsDataURL(file);
+}
+
+function startCropStep() {
+  const img = document.getElementById('crop-image');
+  if (activeCropper) activeCropper.destroy();
+
+  if (activeCropStep === 'thumbnail') {
+    document.getElementById('crop-modal-title').textContent = 'Crop Thumbnail (1 of 2)';
+    document.getElementById('crop-modal-desc').textContent = 'Position and size the crop area — this fixed 4:5 shape is what shows in the gallery grid.';
+    activeCropper = new Cropper(img, { aspectRatio: 4 / 5, viewMode: 1, autoCropArea: 1 });
+  } else {
+    document.getElementById('crop-modal-title').textContent = 'Crop Main Image (2 of 2)';
+    document.getElementById('crop-modal-desc').textContent = 'Now position and size the crop area for the project detail page — this fixed 16:9 shape is what shows there.';
+    activeCropper = new Cropper(img, { aspectRatio: 16 / 9, viewMode: 1, autoCropArea: 1 });
+  }
 }
 
 function closeCropModal() {
@@ -290,21 +324,31 @@ function closeCropModal() {
     activeCropper = null;
   }
   activeCropInputId = null;
+  activeCropStep = null;
 }
 
 function wireCropModal() {
   document.getElementById('crop-confirm-btn').addEventListener('click', () => {
     if (!activeCropper || !activeCropInputId) return;
-    activeCropper.getCroppedCanvas({ width: 800, height: 1000 }).toBlob((blob) => {
-      const inputId = activeCropInputId;
-      pendingCrops[inputId].thumbnailBlob = blob;
-      closeCropModal();
+    const inputId = activeCropInputId;
+    const step = activeCropStep;
+    const dims = step === 'thumbnail' ? { width: 800, height: 1000 } : { width: 1920, height: 1080 };
+
+    activeCropper.getCroppedCanvas(dims).toBlob((blob) => {
+      if (step === 'thumbnail') {
+        pendingCrops[inputId].thumbnailBlob = blob;
+        activeCropStep = 'main';
+        startCropStep(); // move straight into the second crop, same modal
+      } else {
+        pendingCrops[inputId].mainBlob = blob;
+        closeCropModal();
+      }
     }, 'image/jpeg', 0.9);
   });
 
   document.getElementById('crop-cancel-btn').addEventListener('click', () => {
-    // COMMENT: cancelling the crop clears the pending selection for this
-    // field entirely — the user can re-choose the file to try again.
+    // COMMENT: cancelling at any point clears the pending selection for
+    // this field entirely — the user can re-choose the file to try again.
     if (activeCropInputId) {
       delete pendingCrops[activeCropInputId];
       document.getElementById(activeCropInputId).value = '';
@@ -316,7 +360,7 @@ function wireCropModal() {
     document.getElementById(inputId).addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      pendingCrops[inputId] = { original: file, thumbnailBlob: null };
+      pendingCrops[inputId] = { original: file, thumbnailBlob: null, mainBlob: null };
       openCropModal(inputId, file);
     });
   });
@@ -427,16 +471,17 @@ async function saveProjectForm(category) {
       const fileInputId = `form-${suffix}-file`;
       const pending = pendingCrops[fileInputId];
       if (pending && pending.original) {
-        if (!pending.thumbnailBlob) throw new Error('Finish cropping the thumbnail before saving (or cancel and reselect the image).');
+        if (!pending.thumbnailBlob || !pending.mainBlob) {
+          throw new Error('Finish both crop steps before saving (or cancel and reselect the image).');
+        }
 
-        // Upload the original (used at 16:9 on the detail page) and the
-        // cropped thumbnail (used at 4:5 in the gallery grid) separately.
-        const originalKey = makeKey(`projects/${category}`, pending.original);
-        await uploadFile(pending.original, originalKey);
+        const mainFile = new File([pending.mainBlob], `main-${pending.original.name}`, { type: 'image/jpeg' });
+        const mainKey = makeKey(`projects/${category}`, mainFile);
+        await uploadFile(mainFile, mainKey);
         if (existing && existing.image_key) {
           await trashMedia({ storageKey: existing.image_key, originalFilename: title, sourceTable: 'projects', sourceId: id, sourceColumn: 'image_key' });
         }
-        payload.image_key = originalKey;
+        payload.image_key = mainKey;
 
         const thumbFile = new File([pending.thumbnailBlob], `thumb-${pending.original.name}`, { type: 'image/jpeg' });
         const thumbKey = makeKey(`projects/${category}`, thumbFile);

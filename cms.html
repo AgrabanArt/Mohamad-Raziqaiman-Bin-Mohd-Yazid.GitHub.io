@@ -105,6 +105,7 @@
         <div class="cms-form" style="margin-top: 1.5rem;" id="form-home">
           <h3>Background Video</h3>
           <div id="home-video-current" class="cms-empty-note" style="margin-bottom: 0.75rem;"></div>
+          <button class="cms-btn danger" id="remove-home-video-btn" style="margin-bottom: 1rem; display:none;">Remove Current Video</button>
           <div class="form-field">
             <label>Upload new looping video (.mp4, keep it short and compressed — this autoplays muted on every visit)</label>
             <input type="file" id="form-home-video" accept="video/mp4">
@@ -147,9 +148,9 @@
             <div class="form-field">
               <label>Image file</label>
               <input type="file" id="form-2d-file" accept="image/*">
-              <p class="cms-limit-note" style="margin: 0.4rem 0 0;">You'll be asked to crop this to the gallery thumbnail shape (4:5) after selecting it — the full uncropped image is still used on the project's detail page.</p>
+              <p class="cms-limit-note" style="margin: 0.4rem 0 0;">You'll be asked to crop this twice after selecting it: once for the gallery thumbnail (4:5), then once for the detail page's main image (16:9).</p>
             </div>
-            <div class="form-field"><label>LinkedIn post link (optional — shown at the bottom of the detail page)</label><input type="url" id="form-2d-linkedin" placeholder="https://www.linkedin.com/posts/..."></div>
+            <div class="form-field"><label>ArtStation link (optional — shown as a button at the bottom of the detail page)</label><input type="url" id="form-2d-linkedin" placeholder="https://www.artstation.com/artwork/..."></div>
             <div class="cms-form-actions">
               <button class="cms-btn primary" id="save-2d-btn">Save</button>
               <button class="cms-btn" id="cancel-2d-btn">Cancel</button>
@@ -182,10 +183,10 @@
             <div class="form-field">
               <label>Rendered still image</label>
               <input type="file" id="form-3d-file" accept="image/*">
-              <p class="cms-limit-note" style="margin: 0.4rem 0 0;">You'll be asked to crop this to the gallery thumbnail shape (4:5) after selecting it — the full uncropped image is still used on the project's detail page.</p>
+              <p class="cms-limit-note" style="margin: 0.4rem 0 0;">You'll be asked to crop this twice after selecting it: once for the gallery thumbnail (4:5), then once for the detail page's main image (16:9).</p>
             </div>
             <div class="form-field"><label>Interactive 3D model file (.glb / .gltf) — optional</label><input type="file" id="form-3d-model" accept=".glb,.gltf"></div>
-            <div class="form-field"><label>LinkedIn post link (optional — shown at the bottom of the detail page)</label><input type="url" id="form-3d-linkedin" placeholder="https://www.linkedin.com/posts/..."></div>
+            <div class="form-field"><label>ArtStation link (optional — shown as a button at the bottom of the detail page)</label><input type="url" id="form-3d-linkedin" placeholder="https://www.artstation.com/artwork/..."></div>
             <div class="cms-form-actions">
               <button class="cms-btn primary" id="save-3d-btn">Save</button>
               <button class="cms-btn" id="cancel-3d-btn">Cancel</button>
@@ -337,8 +338,8 @@
   <!-- ==================== CROP MODAL (shared by 2D and 3D image uploads) ==================== -->
   <div class="crop-modal" id="crop-modal" hidden>
     <div class="crop-modal-inner">
-      <h3>Crop Thumbnail</h3>
-      <p>Position and size the crop area — this fixed 4:5 shape is what shows in the gallery grid. The full original image (uncropped) is still used on the project's detail page.</p>
+      <h3 id="crop-modal-title">Crop Thumbnail</h3>
+      <p id="crop-modal-desc">Position and size the crop area — this fixed 4:5 shape is what shows in the gallery grid.</p>
       <div class="crop-image-wrap">
         <img id="crop-image" src="" alt="">
       </div>
