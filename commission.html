@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Commission — AgrabanArt</title>
+  <!-- COMMENT: favicon — add favicon.png (or .ico) to the site root, then this picks it up automatically -->
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!--
+    ============================================================
+    COMMENT: This page is deliberately simple — just a scrolling list of
+    images managed from cms.html (Commission tab). Pricing sheet content
+    will be added separately later. The gallery below starts out empty
+    and is filled in by site-data.js.
+    ============================================================
+  -->
+
+  <nav class="site-nav">
+    <a href="index.html" class="brand">AGRABAN<span>ART</span></a>
+    <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About Me</a></li>
+      <li><a href="projects.html">Projects</a></li>
+      <li><a href="commission.html" class="is-active">Commission</a></li>
+      <li><a href="events.html">Events &amp; Achievements</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+  </nav>
+
+  <header style="padding: 9rem 2rem 2rem; text-align: center;">
+    <p class="eyebrow reveal">Commission Work</p>
+    <h1 class="reveal" style="font-family: var(--font-display); font-size: clamp(2.75rem, 8vw, 5rem); margin: 0.5rem 0 0;">Commission</h1>
+  </header>
+
+  <!-- Filled in by site-data.js -->
+  <div class="commission-gallery reveal" id="commission-gallery">
+    <p style="color: var(--muted); font-family: var(--font-mono); font-size: 0.85rem; text-align: center;">Nothing added yet — add images from the CMS.</p>
+  </div>
+
+  <footer class="site-footer">
+    <span class="brand" style="display:inline-block;">AGRABAN<span style="color: var(--gold);">ART</span></span>
+    <p>&copy; <span id="year"></span> Mohamad Raziqaiman Bin Mohd Yazid. All artwork rights reserved.</p>
+  </footer>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+  <script src="site-data.js"></script>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

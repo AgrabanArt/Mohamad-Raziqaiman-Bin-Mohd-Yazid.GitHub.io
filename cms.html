@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CMS — AgrabanArt</title>
+  <!-- COMMENT: favicon — add favicon.png (or .ico) to the site root, then this picks it up automatically -->
+  <link rel="icon" type="image/png" href="favicon.png">
   <meta name="robots" content="noindex, nofollow">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="cms.css">
@@ -88,7 +90,9 @@
     <aside class="cms-sidebar">
       <a href="index.html" class="brand" target="_blank">AGRABAN<span style="color: var(--gold);">ART</span></a>
       <button class="cms-nav-btn is-active" data-panel="panel-home">Home</button>
+      <button class="cms-nav-btn" data-panel="panel-about">About Me</button>
       <button class="cms-nav-btn" data-panel="panel-projects">Projects</button>
+      <button class="cms-nav-btn" data-panel="panel-commission">Commission</button>
       <button class="cms-nav-btn" data-panel="panel-events">Events &amp; Achievements</button>
       <button class="cms-nav-btn" data-panel="panel-contact">Contact</button>
       <button class="cms-nav-btn" data-panel="panel-trash">Trash</button>
@@ -121,6 +125,46 @@
             <button class="cms-btn primary" id="save-home-btn">Save</button>
           </div>
           <p class="cms-status" id="status-home"></p>
+        </div>
+      </section>
+
+      <!-- ==================== ABOUT ME PANEL ==================== -->
+      <section class="cms-panel" id="panel-about">
+        <h2>About Me</h2>
+        <p class="cms-empty-note">Manage the Background, Education, and Soft Skills text, plus the Technical Skills icon marquee.</p>
+
+        <div class="cms-form" style="margin-top: 1.5rem;">
+          <h3>Background</h3>
+          <div class="form-field"><textarea id="form-about-background" style="min-height: 140px;"></textarea></div>
+
+          <h3 style="margin-top: 1.5rem;">Education</h3>
+          <div class="form-field"><textarea id="form-about-education" style="min-height: 140px;"></textarea></div>
+
+          <h3 style="margin-top: 1.5rem;">Soft Skills</h3>
+          <div class="form-field"><textarea id="form-about-soft-skills" style="min-height: 140px;"></textarea></div>
+
+          <div class="cms-form-actions">
+            <button class="cms-btn primary" id="save-about-btn">Save</button>
+          </div>
+          <p class="cms-status" id="status-about"></p>
+        </div>
+
+        <div class="cms-form" style="margin-top: 1.5rem;">
+          <h3>Technical Skills</h3>
+          <p class="cms-empty-note" style="margin-bottom: 1rem;">Each entry shows as an icon + name in the looping marquee. Icon is optional — a placeholder square shows without one.</p>
+          <div id="list-skills"></div>
+          <button class="cms-btn primary" id="add-skill-btn">+ Add Skill</button>
+          <div class="cms-form" id="form-skill" hidden style="background: var(--black);">
+            <h3 id="form-skill-title">Add Skill</h3>
+            <input type="hidden" id="form-skill-id">
+            <div class="form-field"><label>Software name</label><input type="text" id="form-skill-name" placeholder="Photoshop"></div>
+            <div class="form-field"><label>Icon (optional)</label><input type="file" id="form-skill-icon" accept="image/*"></div>
+            <div class="cms-form-actions">
+              <button class="cms-btn primary" id="save-skill-btn">Save</button>
+              <button class="cms-btn" id="cancel-skill-btn">Cancel</button>
+            </div>
+            <p class="cms-status" id="status-skill"></p>
+          </div>
         </div>
       </section>
 
@@ -283,6 +327,26 @@
               <button class="cms-btn" id="add-exhibition-image-btn">+ Add Image</button>
             </div>
           </div>
+        </div>
+      </section>
+
+      <!-- ==================== COMMISSION PANEL ==================== -->
+      <section class="cms-panel" id="panel-commission">
+        <h2>Commission</h2>
+        <p class="cms-empty-note">Manage the scrolling image list on the Commission page. Add, edit, or remove images the same way as Projects — captions are optional.</p>
+
+        <div id="list-commission" style="margin-top: 1.5rem;"></div>
+        <button class="cms-btn primary" id="add-commission-btn">+ Add Image</button>
+        <div class="cms-form" id="form-commission" hidden>
+          <h3 id="form-commission-title">Add Image</h3>
+          <input type="hidden" id="form-commission-id">
+          <div class="form-field"><label>Caption (optional)</label><input type="text" id="form-commission-caption"></div>
+          <div class="form-field"><label>Image file</label><input type="file" id="form-commission-file" accept="image/*"></div>
+          <div class="cms-form-actions">
+            <button class="cms-btn primary" id="save-commission-btn">Save</button>
+            <button class="cms-btn" id="cancel-commission-btn">Cancel</button>
+          </div>
+          <p class="cms-status" id="status-commission"></p>
         </div>
       </section>
 

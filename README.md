@@ -8,8 +8,10 @@ Static HTML/CSS/JS site — no build tools required, hosted on GitHub Pages.
 ```
 portfolio-site/
 ├── index.html               Home — looping background video + tagline (CMS-editable)
+├── about.html                About Me — Background / Education / Technical Skills / Soft Skills (CMS-editable)
 ├── projects.html            2D Illustrations / 3D Modelling / Animation Showreel (live data, 6-item cap each)
 ├── project-template.html    Dynamic detail page — reads ?id= and fetches from Supabase
+├── commission.html            Simple scrolling image list (CMS-managed)
 ├── events.html               Awards / Exhibitions & Competitions (live data)
 ├── contact.html              Photo, link buttons, resume/CV download (all CMS-editable)
 ├── style.css                 Shared design system (colors, type, layout)
@@ -81,9 +83,11 @@ Open `cms.html` and log in with the admin email/password from step 1.3.
 ## Using the CMS day-to-day
 
 - **Home tab** — upload the looping background video (.mp4) and edit the tagline text shown under the site title.
+- **About Me tab** — edit the Background, Education, and Soft Skills text (each is one free-text field), and manage the Technical Skills marquee (software name + optional icon, shown as a looping horizontal strip on the page — entries without an icon show a placeholder square).
 - **Projects tab** — three sub-tabs, **each capped at 6 items**: 2D Illustrations, 3D Modelling (still image + optional `.glb`/`.gltf`), Animation Showreel (YouTube link, no file upload).
-  - For 2D/3D pieces: uploading an image opens a crop tool fixed to the gallery tile's 4:5 shape — that crop is used for the thumbnail specifically. The original, uncropped image is kept separately and shown at 16:9 on the project's detail page.
-  - Each 2D/3D piece can also have up to 3 "support images" (added after the first save) shown on its detail page, and an optional LinkedIn post link shown at the bottom of that page.
+  - For 2D/3D pieces: uploading an image walks you through **two crops** from the source image — first the gallery thumbnail (4:5), then the detail page's main image (16:9).
+  - Each 2D/3D piece can also have up to 3 "support images" (added after the first save) shown on its detail page, and an optional ArtStation post link shown as a button at the bottom of that page.
+- **Commission tab** — a simple add/edit/delete list of images (caption optional), shown as a scrolling gallery on the Commission page. No item cap.
 - **Events & Achievements tab** — Awards (title, description, year, optional link to a related exhibition) and Exhibitions & Competitions (title, description, image gallery).
 - **Contact tab** — upload your Resume and/or CV (PDF) and set the download button's label; clicking that button on the live site downloads whichever of the two files are set. Also manage the row of link buttons (label + URL) — use `mailto:you@example.com` as the URL for an email button.
 - **Trash tab** — replaced/removed media lands here first. **Restore** puts it back; **Delete Permanently** removes it from R2 for good.

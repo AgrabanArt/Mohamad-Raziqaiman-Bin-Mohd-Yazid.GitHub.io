@@ -303,6 +303,71 @@ drop policy if exists "admin write exhibition_images" on exhibition_images;
 create policy "admin write exhibition_images" on exhibition_images for all
   using (is_admin()) with check (is_admin());
 
+-- ----------------------------------------------------------------------------
+-- ABOUT_CONTENT — single-row settings table for the About Me page's three
+-- text sections. Soft skills is kept as free text (not a structured list)
+-- since it doesn't need icons the way technical skills does.
+-- ----------------------------------------------------------------------------
+create table if not exists about_content (
+  id int primary key default 1,
+  background text not null default '',
+  education text not null default '',
+  soft_skills text not null default '',
+  updated_at timestamptz not null default now(),
+  constraint about_content_singleton check (id = 1)
+);
+insert into about_content (id) values (1) on conflict (id) do nothing;
+
+-- ----------------------------------------------------------------------------
+-- TECHNICAL_SKILLS — the looping software-icon marquee on the About Me
+-- page. icon_key is optional — entries without one show a placeholder
+-- square on the live site.
+-- ----------------------------------------------------------------------------
+create table if not exists technical_skills (
+  id uuid primary key default gen_random_uuid(),
+  name text not null default 'Software',
+  icon_key text,
+  sort_order int not null default 0,
+  created_at timestamptz not null default now()
+);
+
+-- ----------------------------------------------------------------------------
+-- COMMISSION_IMAGES — the simple scrolling image list on the Commission
+-- page. caption is optional.
+-- ----------------------------------------------------------------------------
+create table if not exists commission_images (
+  id uuid primary key default gen_random_uuid(),
+  caption text,
+  image_key text not null,
+  sort_order int not null default 0,
+  created_at timestamptz not null default now()
+);
+
+alter table about_content enable row level security;
+alter table technical_skills enable row level security;
+alter table commission_images enable row level security;
+
+drop policy if exists "public read about_content" on about_content;
+create policy "public read about_content" on about_content for select using (true);
+
+drop policy if exists "public read technical_skills" on technical_skills;
+create policy "public read technical_skills" on technical_skills for select using (true);
+
+drop policy if exists "public read commission_images" on commission_images;
+create policy "public read commission_images" on commission_images for select using (true);
+
+drop policy if exists "admin write about_content" on about_content;
+create policy "admin write about_content" on about_content for all
+  using (is_admin()) with check (is_admin());
+
+drop policy if exists "admin write technical_skills" on technical_skills;
+create policy "admin write technical_skills" on technical_skills for all
+  using (is_admin()) with check (is_admin());
+
+drop policy if exists "admin write commission_images" on commission_images;
+create policy "admin write commission_images" on commission_images for all
+  using (is_admin()) with check (is_admin());
+
 -- media_trash and admins tables: admin-only, no public access at all
 drop policy if exists "admin only media_trash" on media_trash;
 create policy "admin only media_trash" on media_trash for all

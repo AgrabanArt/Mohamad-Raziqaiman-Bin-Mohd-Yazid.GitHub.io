@@ -81,18 +81,23 @@ function initDashboard() {
   });
 
   refreshHomeContent();
+  refreshAboutContent();
+  refreshSkills();
   refreshProjects('2d');
   refreshProjects('3d');
   refreshProjects('animation');
   refreshAwards();
   refreshExhibitions();
+  refreshCommissionImages();
   refreshContactSettings();
   refreshContactLinks();
   refreshTrash();
   wireHomeForm();
+  wireAboutForm();
   wireProjectForms();
   wireAwardForm();
   wireExhibitionForm();
+  wireCommissionForm();
   wireContactForms();
 }
 
@@ -219,6 +224,228 @@ function wireHomeForm() {
       statusEl.className = 'cms-status error';
     }
   });
+}
+
+// ==========================================================================
+// ABOUT ME — background/education/soft-skills text + technical skills
+// marquee (icon + name entries)
+// ==========================================================================
+
+async function refreshAboutContent() {
+  const { data, error } = await client.from('about_content').select('*').eq('id', 1).single();
+  if (error) {
+    console.error(error);
+    return;
+  }
+  document.getElementById('form-about-background').value = data.background || '';
+  document.getElementById('form-about-education').value = data.education || '';
+  document.getElementById('form-about-soft-skills').value = data.soft_skills || '';
+}
+
+function wireAboutForm() {
+  document.getElementById('save-about-btn').addEventListener('click', async () => {
+    const statusEl = document.getElementById('status-about');
+    statusEl.className = 'cms-status';
+    statusEl.textContent = 'Saving…';
+    try {
+      const payload = {
+        background: document.getElementById('form-about-background').value.trim(),
+        education: document.getElementById('form-about-education').value.trim(),
+        soft_skills: document.getElementById('form-about-soft-skills').value.trim(),
+      };
+      const { error } = await client.from('about_content').update(payload).eq('id', 1);
+      if (error) throw error;
+      statusEl.textContent = 'Saved.';
+      statusEl.className = 'cms-status success';
+    } catch (err) {
+      statusEl.textContent = err.message;
+      statusEl.className = 'cms-status error';
+    }
+  });
+
+  document.getElementById('add-skill-btn').addEventListener('click', () => openSkillForm(null));
+  document.getElementById('cancel-skill-btn').addEventListener('click', () => { document.getElementById('form-skill').hidden = true; });
+  document.getElementById('save-skill-btn').addEventListener('click', saveSkillForm);
+}
+
+async function refreshSkills() {
+  const { data, error } = await client.from('technical_skills').select('*').order('sort_order');
+  if (error) {
+    console.error(error);
+    return;
+  }
+  const container = document.getElementById('list-skills');
+  container.innerHTML = '';
+  if (!data.length) {
+    container.innerHTML = '<p class="cms-empty-note">Nothing added yet.</p>';
+    return;
+  }
+  data.forEach((skill) => {
+    const row = document.createElement('div');
+    row.className = 'cms-item-card';
+    const thumbHtml = skill.icon_key
+      ? `<img class="cms-item-thumb" src="${mediaUrl(skill.icon_key)}" alt="">`
+      : `<div class="cms-item-thumb"></div>`;
+    row.innerHTML = `
+      ${thumbHtml}
+      <div class="cms-item-info"><h4>${escapeHtml(skill.name)}</h4></div>
+      <div class="cms-item-actions">
+        <button class="cms-btn edit-btn">Edit</button>
+        <button class="cms-btn danger delete-btn">Delete</button>
+      </div>
+    `;
+    row.querySelector('.edit-btn').addEventListener('click', () => openSkillForm(skill));
+    row.querySelector('.delete-btn').addEventListener('click', () => deleteSkill(skill));
+    container.appendChild(row);
+  });
+}
+
+function openSkillForm(skill) {
+  document.getElementById('form-skill').hidden = false;
+  document.getElementById('form-skill-title').textContent = skill ? `Edit ${skill.name}` : 'Add Skill';
+  document.getElementById('form-skill-id').value = skill ? skill.id : '';
+  document.getElementById('form-skill-name').value = skill ? skill.name : '';
+  document.getElementById('form-skill-icon').value = '';
+  document.getElementById('status-skill').textContent = '';
+  document.getElementById('form-skill')._editingSkill = skill || null;
+}
+
+async function saveSkillForm() {
+  const statusEl = document.getElementById('status-skill');
+  statusEl.className = 'cms-status';
+  statusEl.textContent = 'Saving…';
+  try {
+    const id = document.getElementById('form-skill-id').value || null;
+    const existing = document.getElementById('form-skill')._editingSkill;
+    const payload = { name: document.getElementById('form-skill-name').value.trim() || 'Software' };
+
+    const fileInput = document.getElementById('form-skill-icon');
+    if (fileInput.files[0]) {
+      const key = makeKey('skills', fileInput.files[0]);
+      await uploadFile(fileInput.files[0], key);
+      if (existing && existing.icon_key) {
+        await trashMedia({ storageKey: existing.icon_key, originalFilename: payload.name, sourceTable: 'technical_skills', sourceId: id, sourceColumn: 'icon_key' });
+      }
+      payload.icon_key = key;
+    }
+
+    const { error } = id
+      ? await client.from('technical_skills').update(payload).eq('id', id)
+      : await client.from('technical_skills').insert(payload);
+    if (error) throw error;
+
+    statusEl.textContent = 'Saved.';
+    statusEl.className = 'cms-status success';
+    refreshSkills();
+    refreshTrash();
+    setTimeout(() => { document.getElementById('form-skill').hidden = true; }, 600);
+  } catch (err) {
+    statusEl.textContent = err.message;
+    statusEl.className = 'cms-status error';
+  }
+}
+
+async function deleteSkill(skill) {
+  if (!confirm(`Delete "${skill.name}"?`)) return;
+  if (skill.icon_key) {
+    await trashMedia({ storageKey: skill.icon_key, originalFilename: skill.name, sourceTable: 'technical_skills', sourceId: skill.id, sourceColumn: 'icon_key' });
+  }
+  await client.from('technical_skills').delete().eq('id', skill.id);
+  refreshSkills();
+  refreshTrash();
+}
+
+// ==========================================================================
+// COMMISSION — simple scrolling image list (caption optional)
+// ==========================================================================
+
+async function refreshCommissionImages() {
+  const { data, error } = await client.from('commission_images').select('*').order('sort_order');
+  if (error) {
+    console.error(error);
+    return;
+  }
+  const container = document.getElementById('list-commission');
+  container.innerHTML = '';
+  if (!data.length) {
+    container.innerHTML = '<p class="cms-empty-note">Nothing added yet.</p>';
+    return;
+  }
+  data.forEach((img) => {
+    const row = document.createElement('div');
+    row.className = 'cms-item-card';
+    row.innerHTML = `
+      <img class="cms-item-thumb" src="${mediaUrl(img.image_key)}" alt="">
+      <div class="cms-item-info"><h4>${escapeHtml(img.caption || '(no caption)')}</h4></div>
+      <div class="cms-item-actions">
+        <button class="cms-btn edit-btn">Edit</button>
+        <button class="cms-btn danger delete-btn">Delete</button>
+      </div>
+    `;
+    row.querySelector('.edit-btn').addEventListener('click', () => openCommissionForm(img));
+    row.querySelector('.delete-btn').addEventListener('click', () => deleteCommissionImage(img));
+    container.appendChild(row);
+  });
+}
+
+function openCommissionForm(img) {
+  document.getElementById('form-commission').hidden = false;
+  document.getElementById('form-commission-title').textContent = img ? 'Edit Image' : 'Add Image';
+  document.getElementById('form-commission-id').value = img ? img.id : '';
+  document.getElementById('form-commission-caption').value = img ? img.caption || '' : '';
+  document.getElementById('form-commission-file').value = '';
+  document.getElementById('status-commission').textContent = '';
+  document.getElementById('form-commission')._editingImage = img || null;
+}
+
+function wireCommissionForm() {
+  document.getElementById('add-commission-btn').addEventListener('click', () => openCommissionForm(null));
+  document.getElementById('cancel-commission-btn').addEventListener('click', () => { document.getElementById('form-commission').hidden = true; });
+
+  document.getElementById('save-commission-btn').addEventListener('click', async () => {
+    const statusEl = document.getElementById('status-commission');
+    statusEl.className = 'cms-status';
+    statusEl.textContent = 'Saving…';
+    try {
+      const id = document.getElementById('form-commission-id').value || null;
+      const existing = document.getElementById('form-commission')._editingImage;
+      const payload = { caption: document.getElementById('form-commission-caption').value.trim() || null };
+
+      const fileInput = document.getElementById('form-commission-file');
+      if (fileInput.files[0]) {
+        const key = makeKey('commission', fileInput.files[0]);
+        await uploadFile(fileInput.files[0], key);
+        if (existing && existing.image_key) {
+          await trashMedia({ storageKey: existing.image_key, originalFilename: payload.caption || 'commission image', sourceTable: 'commission_images', sourceId: id, sourceColumn: 'image_key' });
+        }
+        payload.image_key = key;
+      } else if (!id) {
+        throw new Error('Please choose an image file.');
+      }
+
+      const { error } = id
+        ? await client.from('commission_images').update(payload).eq('id', id)
+        : await client.from('commission_images').insert(payload);
+      if (error) throw error;
+
+      statusEl.textContent = 'Saved.';
+      statusEl.className = 'cms-status success';
+      refreshCommissionImages();
+      refreshTrash();
+      setTimeout(() => { document.getElementById('form-commission').hidden = true; }, 600);
+    } catch (err) {
+      statusEl.textContent = err.message;
+      statusEl.className = 'cms-status error';
+    }
+  });
+}
+
+async function deleteCommissionImage(img) {
+  if (!confirm('Delete this image?')) return;
+  await trashMedia({ storageKey: img.image_key, originalFilename: img.caption || 'commission image', sourceTable: 'commission_images', sourceId: img.id, sourceColumn: 'image_key' });
+  await client.from('commission_images').delete().eq('id', img.id);
+  refreshCommissionImages();
+  refreshTrash();
 }
 
 // ==========================================================================
@@ -1030,10 +1257,12 @@ async function restoreFromTrash(item) {
   await client.from('media_trash').delete().eq('id', item.id);
   refreshTrash();
   refreshHomeContent();
+  refreshSkills();
   refreshProjects('2d');
   refreshProjects('3d');
   refreshProjects('animation');
   refreshExhibitions();
+  refreshCommissionImages();
   refreshContactSettings();
 }
 

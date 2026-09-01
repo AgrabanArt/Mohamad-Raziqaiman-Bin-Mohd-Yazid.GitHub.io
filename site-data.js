@@ -195,6 +195,76 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ------------------------------------------------------------------
+  // ABOUT ME PAGE — background/education/soft-skills text + technical
+  // skills marquee
+  // ------------------------------------------------------------------
+  const aboutBackground = document.getElementById('about-background');
+  const aboutEducation = document.getElementById('about-education');
+  const aboutSoftSkills = document.getElementById('about-soft-skills');
+  const skillsTrack = document.getElementById('skills-marquee-track');
+
+  if (aboutBackground || aboutEducation || aboutSoftSkills || skillsTrack) {
+    const [{ data: about, error: aboutErr }, { data: skills, error: skillsErr }] = await Promise.all([
+      client.from('about_content').select('*').eq('id', 1).single(),
+      client.from('technical_skills').select('*').order('sort_order', { ascending: true }),
+    ]);
+
+    if (aboutErr) console.error('AgrabanArt: failed to load about content', aboutErr);
+    if (skillsErr) console.error('AgrabanArt: failed to load technical skills', skillsErr);
+
+    if (about) {
+      if (aboutBackground && about.background) aboutBackground.textContent = about.background;
+      if (aboutEducation && about.education) aboutEducation.textContent = about.education;
+      if (aboutSoftSkills && about.soft_skills) aboutSoftSkills.textContent = about.soft_skills;
+    }
+
+    if (skillsTrack && skills && skills.length) {
+      const buildSkillItem = (skill) => {
+        const item = document.createElement('div');
+        item.className = 'skill-item';
+        const iconHtml = skill.icon_key
+          ? `<div class="skill-icon"><img src="${mediaUrl(skill.icon_key)}" alt="${escapeHtml(skill.name)}"></div>`
+          : `<div class="skill-icon"></div>`;
+        item.innerHTML = `${iconHtml}<p class="skill-name">${escapeHtml(skill.name)}</p>`;
+        return item;
+      };
+
+      skillsTrack.innerHTML = '';
+      // COMMENT: the list is rendered twice back-to-back so the marquee
+      // can loop seamlessly — the CSS animation shifts exactly one copy's
+      // width (-50%) before resetting, which reads as an unbroken loop.
+      skills.forEach((s) => skillsTrack.appendChild(buildSkillItem(s)));
+      skills.forEach((s) => skillsTrack.appendChild(buildSkillItem(s)));
+    }
+  }
+
+  // ------------------------------------------------------------------
+  // COMMISSION PAGE — simple scrolling image list
+  // ------------------------------------------------------------------
+  const commissionGallery = document.getElementById('commission-gallery');
+
+  if (commissionGallery) {
+    const { data: images, error } = await client
+      .from('commission_images')
+      .select('*')
+      .order('sort_order', { ascending: true });
+
+    if (error) {
+      console.error('AgrabanArt: failed to load commission images', error);
+    } else if (images && images.length) {
+      commissionGallery.innerHTML = '';
+      images.forEach((img) => {
+        const item = document.createElement('div');
+        item.className = 'commission-item';
+        const captionHtml = img.caption ? `<p class="commission-caption">${escapeHtml(img.caption)}</p>` : '';
+        item.innerHTML = `<img src="${mediaUrl(img.image_key)}" alt="${escapeHtml(img.caption || 'Commission work')}">${captionHtml}`;
+        commissionGallery.appendChild(item);
+        window.AgrabanReveal?.observe(item);
+      });
+    }
+  }
+
+  // ------------------------------------------------------------------
   // CONTACT PAGE — link buttons + resume/CV download
   // ------------------------------------------------------------------
   const contactLinksGrid = document.getElementById('contact-links-grid');

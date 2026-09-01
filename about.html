@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Me — AgrabanArt</title>
+  <!-- COMMENT: favicon — add favicon.png (or .ico) to the site root, then this picks it up automatically -->
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!--
+    ============================================================
+    COMMENT: Background, Education, and Soft Skills text, plus the
+    Technical Skills icon marquee, are all managed from cms.html (About
+    tab). The containers below start out with fallback text and get
+    replaced by site-data.js once it fetches from Supabase.
+    ============================================================
+  -->
+
+  <nav class="site-nav">
+    <a href="index.html" class="brand">AGRABAN<span>ART</span></a>
+    <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html" class="is-active">About Me</a></li>
+      <li><a href="projects.html">Projects</a></li>
+      <li><a href="commission.html">Commission</a></li>
+      <li><a href="events.html">Events &amp; Achievements</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+  </nav>
+
+  <header style="padding: 9rem 2rem 2rem; text-align: center;">
+    <p class="eyebrow reveal">Get to know me</p>
+    <h1 class="reveal" style="font-family: var(--font-display); font-size: clamp(2.75rem, 8vw, 5rem); margin: 0.5rem 0 0;">About Me</h1>
+  </header>
+
+  <!-- =========================== BACKGROUND =========================== -->
+  <section class="about-section">
+    <div class="wrap reveal">
+      <h2>Background</h2>
+      <p class="about-text" id="about-background">Background text goes here — add it from the CMS (About tab).</p>
+    </div>
+  </section>
+
+  <!-- =========================== EDUCATION =========================== -->
+  <section class="about-section">
+    <div class="wrap reveal">
+      <h2>Education</h2>
+      <p class="about-text" id="about-education">Education text goes here — add it from the CMS (About tab).</p>
+    </div>
+  </section>
+
+  <!-- =========================== TECHNICAL SKILLS =========================== -->
+  <section class="about-section">
+    <div class="wrap reveal">
+      <h2>Technical Skills</h2>
+    </div>
+    <!-- Filled in by site-data.js — a looping horizontal marquee of software icons + names -->
+    <div class="skills-marquee">
+      <div class="skills-marquee-track" id="skills-marquee-track">
+        <div class="skill-item">
+          <div class="skill-icon"></div>
+          <p class="skill-name">Add skills from the CMS</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================== SOFT SKILLS =========================== -->
+  <section class="about-section">
+    <div class="wrap reveal">
+      <h2>Soft Skills</h2>
+      <p class="about-text" id="about-soft-skills">Soft skills text goes here — add it from the CMS (About tab).</p>
+    </div>
+  </section>
+
+  <!-- =========================== CTA =========================== -->
+  <div class="about-cta reveal">
+    <a href="contact.html" class="btn">Get In Touch</a>
+  </div>
+
+  <footer class="site-footer">
+    <span class="brand" style="display:inline-block;">AGRABAN<span style="color: var(--gold);">ART</span></span>
+    <p>&copy; <span id="year"></span> Mohamad Raziqaiman Bin Mohd Yazid. All artwork rights reserved.</p>
+  </footer>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+  <script src="site-data.js"></script>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
