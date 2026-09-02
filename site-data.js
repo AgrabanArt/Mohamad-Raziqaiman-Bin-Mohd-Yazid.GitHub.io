@@ -274,21 +274,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ------------------------------------------------------------------
-  // CONTACT PAGE — link buttons + resume/CV download
+  // CONTACT PAGE — link buttons + resume/CV download buttons
   // ------------------------------------------------------------------
   const contactLinksGrid = document.getElementById('contact-links-grid');
-  const resumeBtn = document.getElementById('resume-download-btn');
+  const resumeButtons = document.getElementById('resume-buttons');
+  const socialsDivider = document.getElementById('contact-socials-divider');
 
-  if (contactLinksGrid || resumeBtn) {
-    const [{ data: links, error: linksErr }, { data: settings, error: settingsErr }] = await Promise.all([
+  if (contactLinksGrid || resumeButtons) {
+    const [{ data: links, error: linksErr }, { data: resumeDocs, error: resumeErr }] = await Promise.all([
       client.from('contact_links').select('*').order('sort_order', { ascending: true }),
-      client.from('contact_settings').select('*').eq('id', 1).single(),
+      client.from('resume_documents').select('*').order('sort_order', { ascending: true }),
     ]);
 
     if (linksErr) console.error('AgrabanArt: failed to load contact links', linksErr);
-    if (settingsErr) console.error('AgrabanArt: failed to load contact settings', settingsErr);
+    if (resumeErr) console.error('AgrabanArt: failed to load resume documents', resumeErr);
 
+    let hasLinks = false;
     if (contactLinksGrid && links && links.length) {
+      hasLinks = true;
       contactLinksGrid.innerHTML = '';
       links.forEach((link) => {
         const a = document.createElement('a');
@@ -303,18 +306,23 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
-    if (resumeBtn && settings) {
-      resumeBtn.textContent = settings.download_button_label || 'Download Resume / CV';
-      if (settings.resume_key || settings.cv_key) {
-        resumeBtn.style.display = 'inline-flex';
-        resumeBtn.addEventListener('click', () => {
-          // COMMENT: triggers a download for each file that's actually
-          // been uploaded — if only one of resume/CV is set, just that
-          // one downloads.
-          if (settings.resume_key) triggerDownload(mediaUrl(settings.resume_key), 'resume.pdf');
-          if (settings.cv_key) triggerDownload(mediaUrl(settings.cv_key), 'cv.pdf');
-        });
-      }
+    let hasResumeDocs = false;
+    if (resumeButtons && resumeDocs && resumeDocs.length) {
+      hasResumeDocs = true;
+      resumeDocs.forEach((doc) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.textContent = doc.label;
+        btn.addEventListener('click', () => triggerDownload(mediaUrl(doc.file_key), `${doc.label}.pdf`));
+        resumeButtons.appendChild(btn);
+        window.AgrabanReveal?.observe(btn);
+      });
+    }
+
+    // Only show the "My Socials" divider when there's something on both
+    // sides of it to actually separate.
+    if (socialsDivider && hasResumeDocs && hasLinks) {
+      socialsDivider.style.display = 'block';
     }
   }
 

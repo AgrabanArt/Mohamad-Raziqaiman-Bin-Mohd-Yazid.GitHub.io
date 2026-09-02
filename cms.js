@@ -89,7 +89,7 @@ function initDashboard() {
   refreshAwards();
   refreshExhibitions();
   refreshCommissionImages();
-  refreshContactSettings();
+  refreshResumeDocs();
   refreshContactLinks();
   refreshTrash();
   wireHomeForm();
@@ -1067,59 +1067,93 @@ function wireExhibitionForm() {
 // CONTACT — resume/CV download settings + link buttons
 // ==========================================================================
 
-let contactSettingsCache = null;
+// ==========================================================================
+// CONTACT — resume/CV documents (multiple) + link buttons
+// ==========================================================================
 
-async function refreshContactSettings() {
-  const { data, error } = await client.from('contact_settings').select('*').eq('id', 1).single();
+async function refreshResumeDocs() {
+  const { data, error } = await client.from('resume_documents').select('*').order('sort_order');
   if (error) {
     console.error(error);
     return;
   }
-  contactSettingsCache = data;
-  document.getElementById('form-contact-button-label').value = data.download_button_label || '';
-  const currentEl = document.getElementById('contact-files-current');
-  const parts = [];
-  parts.push(data.resume_key ? `Resume: ${data.resume_key}` : 'Resume: none uploaded');
-  parts.push(data.cv_key ? `CV: ${data.cv_key}` : 'CV: none uploaded');
-  currentEl.textContent = parts.join(' · ');
+  const container = document.getElementById('list-resume-docs');
+  container.innerHTML = '';
+  if (!data.length) {
+    container.innerHTML = '<p class="cms-empty-note">Nothing added yet.</p>';
+    return;
+  }
+  data.forEach((doc) => {
+    const row = document.createElement('div');
+    row.className = 'cms-item-card';
+    row.innerHTML = `
+      <div class="cms-item-info">
+        <h4>${escapeHtml(doc.label)}</h4>
+        <p>${escapeHtml(doc.file_key)}</p>
+      </div>
+      <div class="cms-item-actions">
+        <button class="cms-btn edit-btn">Edit</button>
+        <button class="cms-btn danger delete-btn">Delete</button>
+      </div>
+    `;
+    row.querySelector('.edit-btn').addEventListener('click', () => openResumeDocForm(doc));
+    row.querySelector('.delete-btn').addEventListener('click', () => deleteResumeDoc(doc));
+    container.appendChild(row);
+  });
+}
+
+function openResumeDocForm(doc) {
+  document.getElementById('form-resume-doc').hidden = false;
+  document.getElementById('form-resume-doc-title').textContent = doc ? `Edit ${doc.label}` : 'Add Document';
+  document.getElementById('form-resume-doc-id').value = doc ? doc.id : '';
+  document.getElementById('form-resume-doc-label').value = doc ? doc.label : '';
+  document.getElementById('form-resume-doc-file').value = '';
+  document.getElementById('status-resume-doc').textContent = '';
+  document.getElementById('form-resume-doc')._editingDoc = doc || null;
+}
+
+async function deleteResumeDoc(doc) {
+  if (!confirm(`Delete "${doc.label}"?`)) return;
+  await trashMedia({ storageKey: doc.file_key, originalFilename: doc.label, sourceTable: 'resume_documents', sourceId: doc.id, sourceColumn: 'file_key' });
+  await client.from('resume_documents').delete().eq('id', doc.id);
+  refreshResumeDocs();
+  refreshTrash();
 }
 
 function wireContactForms() {
-  document.getElementById('save-contact-settings-btn').addEventListener('click', async () => {
-    const statusEl = document.getElementById('status-contact-settings');
+  document.getElementById('add-resume-doc-btn').addEventListener('click', () => openResumeDocForm(null));
+  document.getElementById('cancel-resume-doc-btn').addEventListener('click', () => { document.getElementById('form-resume-doc').hidden = true; });
+  document.getElementById('save-resume-doc-btn').addEventListener('click', async () => {
+    const statusEl = document.getElementById('status-resume-doc');
     statusEl.className = 'cms-status';
     statusEl.textContent = 'Saving…';
     try {
-      const payload = { download_button_label: document.getElementById('form-contact-button-label').value.trim() || 'Download Resume / CV' };
+      const id = document.getElementById('form-resume-doc-id').value || null;
+      const existing = document.getElementById('form-resume-doc')._editingDoc;
+      const payload = { label: document.getElementById('form-resume-doc-label').value.trim() || 'Resume' };
 
-      const resumeInput = document.getElementById('form-contact-resume');
-      if (resumeInput.files[0]) {
-        const key = makeKey('documents', resumeInput.files[0]);
-        await uploadFile(resumeInput.files[0], key);
-        if (contactSettingsCache && contactSettingsCache.resume_key) {
-          await trashMedia({ storageKey: contactSettingsCache.resume_key, originalFilename: 'resume', sourceTable: 'contact_settings', sourceId: 1, sourceColumn: 'resume_key' });
+      const fileInput = document.getElementById('form-resume-doc-file');
+      if (fileInput.files[0]) {
+        const key = makeKey('documents', fileInput.files[0]);
+        await uploadFile(fileInput.files[0], key);
+        if (existing && existing.file_key) {
+          await trashMedia({ storageKey: existing.file_key, originalFilename: payload.label, sourceTable: 'resume_documents', sourceId: id, sourceColumn: 'file_key' });
         }
-        payload.resume_key = key;
+        payload.file_key = key;
+      } else if (!id) {
+        throw new Error('Please choose a PDF file.');
       }
 
-      const cvInput = document.getElementById('form-contact-cv');
-      if (cvInput.files[0]) {
-        const key = makeKey('documents', cvInput.files[0]);
-        await uploadFile(cvInput.files[0], key);
-        if (contactSettingsCache && contactSettingsCache.cv_key) {
-          await trashMedia({ storageKey: contactSettingsCache.cv_key, originalFilename: 'cv', sourceTable: 'contact_settings', sourceId: 1, sourceColumn: 'cv_key' });
-        }
-        payload.cv_key = key;
-      }
-
-      const { error } = await client.from('contact_settings').update(payload).eq('id', 1);
+      const { error } = id
+        ? await client.from('resume_documents').update(payload).eq('id', id)
+        : await client.from('resume_documents').insert(payload);
       if (error) throw error;
+
       statusEl.textContent = 'Saved.';
       statusEl.className = 'cms-status success';
-      resumeInput.value = '';
-      cvInput.value = '';
-      refreshContactSettings();
+      refreshResumeDocs();
       refreshTrash();
+      setTimeout(() => { document.getElementById('form-resume-doc').hidden = true; }, 600);
     } catch (err) {
       statusEl.textContent = err.message;
       statusEl.className = 'cms-status error';
@@ -1263,7 +1297,7 @@ async function restoreFromTrash(item) {
   refreshProjects('animation');
   refreshExhibitions();
   refreshCommissionImages();
-  refreshContactSettings();
+  refreshResumeDocs();
 }
 
 async function deleteForever(item) {

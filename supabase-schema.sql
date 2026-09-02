@@ -368,6 +368,28 @@ drop policy if exists "admin write commission_images" on commission_images;
 create policy "admin write commission_images" on commission_images for all
   using (is_admin()) with check (is_admin());
 
+-- ----------------------------------------------------------------------------
+-- RESUME_DOCUMENTS — multiple labeled resume/CV download buttons on the
+-- Contact page (e.g. "Resume — 2D Illustrator", "CV — General"). Replaces
+-- the old single resume_key/cv_key fields on contact_settings, which are
+-- no longer used by the CMS but are left in place harmlessly.
+-- ----------------------------------------------------------------------------
+create table if not exists resume_documents (
+  id uuid primary key default gen_random_uuid(),
+  label text not null default 'Resume',
+  file_key text not null,
+  sort_order int not null default 0,
+  created_at timestamptz not null default now()
+);
+alter table resume_documents enable row level security;
+
+drop policy if exists "public read resume_documents" on resume_documents;
+create policy "public read resume_documents" on resume_documents for select using (true);
+
+drop policy if exists "admin write resume_documents" on resume_documents;
+create policy "admin write resume_documents" on resume_documents for all
+  using (is_admin()) with check (is_admin());
+
 -- media_trash and admins tables: admin-only, no public access at all
 drop policy if exists "admin only media_trash" on media_trash;
 create policy "admin only media_trash" on media_trash for all

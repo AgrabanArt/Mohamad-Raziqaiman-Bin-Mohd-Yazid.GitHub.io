@@ -353,18 +353,24 @@
       <!-- ==================== CONTACT PANEL ==================== -->
       <section class="cms-panel" id="panel-contact">
         <h2>Contact</h2>
-        <p class="cms-empty-note">Manage the resume/CV download and the social/contact link buttons on the Contact page.</p>
+        <p class="cms-empty-note">Manage the resume/CV download buttons and the social/contact link buttons on the Contact page.</p>
 
         <div class="cms-form" style="margin-top: 1.5rem;">
-          <h3>Resume / CV Download</h3>
-          <div id="contact-files-current" class="cms-empty-note" style="margin-bottom: 0.75rem;"></div>
-          <div class="form-field"><label>Button text</label><input type="text" id="form-contact-button-label"></div>
-          <div class="form-field"><label>Upload Resume (PDF)</label><input type="file" id="form-contact-resume" accept="application/pdf"></div>
-          <div class="form-field"><label>Upload CV (PDF)</label><input type="file" id="form-contact-cv" accept="application/pdf"></div>
-          <div class="cms-form-actions">
-            <button class="cms-btn primary" id="save-contact-settings-btn">Save</button>
+          <h3>Resume / CV Documents</h3>
+          <p class="cms-empty-note" style="margin-bottom: 1rem;">Each entry becomes its own download button — add as many as you need (e.g. separate resumes per job role, plus a CV).</p>
+          <div id="list-resume-docs"></div>
+          <button class="cms-btn primary" id="add-resume-doc-btn">+ Add Document</button>
+          <div class="cms-form" id="form-resume-doc" hidden style="background: var(--black);">
+            <h3 id="form-resume-doc-title">Add Document</h3>
+            <input type="hidden" id="form-resume-doc-id">
+            <div class="form-field"><label>Button text</label><input type="text" id="form-resume-doc-label" placeholder="Resume — 2D Illustrator"></div>
+            <div class="form-field"><label>PDF file</label><input type="file" id="form-resume-doc-file" accept="application/pdf"></div>
+            <div class="cms-form-actions">
+              <button class="cms-btn primary" id="save-resume-doc-btn">Save</button>
+              <button class="cms-btn" id="cancel-resume-doc-btn">Cancel</button>
+            </div>
+            <p class="cms-status" id="status-resume-doc"></p>
           </div>
-          <p class="cms-status" id="status-contact-settings"></p>
         </div>
 
         <div class="cms-form" style="margin-top: 1.5rem;">

@@ -8,6 +8,34 @@
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="stylesheet" href="style.css">
   <style>
+    .resume-btn-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.75rem;
+      margin-top: 2.25rem;
+    }
+
+    .contact-divider {
+      width: 100%;
+      max-width: 420px;
+      margin: 2.5rem auto 0;
+    }
+    .contact-divider hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 0 0 1rem;
+    }
+    .contact-divider p {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      text-align: center;
+      margin: 0;
+    }
+
     .contact-links-grid a,
     .contact-links-grid button {
       display: flex;
@@ -69,9 +97,15 @@
       For commissions, collaborations, or just to say hi — reach out through any of the channels below.
     </p>
 
-    <!-- Resume/CV download button — label + files come from the CMS -->
-    <div class="resume-btn-wrap reveal">
-      <button id="resume-download-btn" class="btn" style="display:none;">Download Resume / CV</button>
+    <!-- Resume/CV download buttons — one per document, managed from the CMS -->
+    <div class="resume-btn-wrap reveal" id="resume-buttons">
+      <!-- Filled in by site-data.js — hidden by default until at least one document exists -->
+    </div>
+
+    <!-- Divider + label separating the resume buttons from the socials below -->
+    <div class="contact-divider reveal" id="contact-socials-divider" style="display:none;">
+      <hr>
+      <p>My Socials</p>
     </div>
 
     <!-- Social/contact link buttons — populated by site-data.js -->
