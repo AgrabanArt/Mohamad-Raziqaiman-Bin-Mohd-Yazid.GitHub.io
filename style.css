@@ -687,6 +687,26 @@ img {
 .about-section:nth-child(odd) { background: var(--black-soft); }
 .about-section:nth-child(even) { background: var(--surface); }
 
+/* COMMENT: alternates each section's text block left/right down the page.
+   Scoped to .wrap specifically (not .skills-marquee, which is a separate
+   sibling) so the Technical Skills marquee always stays full-width
+   regardless of this alternation. */
+.about-section .wrap {
+  margin-left: 0;
+  margin-right: auto;
+  text-align: left;
+}
+
+.about-section:nth-child(even) .wrap {
+  margin-left: auto;
+  margin-right: 0;
+  text-align: right;
+}
+
+.about-section:nth-child(even) .about-text {
+  margin-left: auto;
+}
+
 .about-section h2 {
   font-family: var(--font-display);
   font-size: clamp(2.25rem, 5vw, 3.25rem);

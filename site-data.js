@@ -230,11 +230,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       };
 
       skillsTrack.innerHTML = '';
-      // COMMENT: the list is rendered twice back-to-back so the marquee
-      // can loop seamlessly — the CSS animation shifts exactly one copy's
-      // width (-50%) before resetting, which reads as an unbroken loop.
-      skills.forEach((s) => skillsTrack.appendChild(buildSkillItem(s)));
-      skills.forEach((s) => skillsTrack.appendChild(buildSkillItem(s)));
+      // COMMENT: with only a few skills added, simply duplicating the list
+      // once left a visible gap on wide screens — there wasn't enough
+      // content to fill the row before the loop restarted. This repeats
+      // the skill set enough times to comfortably cover very wide
+      // monitors, THEN duplicates that whole stretch once more so the
+      // translateX(-50%) loop in the CSS animation stays seamless
+      // regardless of how many skills exist.
+      const estimatedItemWidth = 150; // icon + gap, roughly
+      const targetUnitWidth = 3200; // comfortably covers ultra-wide screens
+      const repeatCount = Math.max(1, Math.ceil(targetUnitWidth / (skills.length * estimatedItemWidth)));
+
+      for (let copy = 0; copy < repeatCount * 2; copy++) {
+        skills.forEach((s) => skillsTrack.appendChild(buildSkillItem(s)));
+      }
     }
   }
 
