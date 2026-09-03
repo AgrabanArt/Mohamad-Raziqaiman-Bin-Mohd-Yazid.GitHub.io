@@ -55,38 +55,11 @@
     <p>&copy; <span id="year"></span> Mohamad Raziqaiman Bin Mohd Yazid. All artwork rights reserved.</p>
   </footer>
 
-  <!-- ==================== LIGHTBOX (for support images) ==================== -->
-  <div id="lightbox" class="lightbox" hidden>
-    <button id="lightbox-close" class="lightbox-close" aria-label="Close">&times;</button>
-    <img id="lightbox-image" src="" alt="">
-  </div>
-
   <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="config.js"></script>
   <script src="script.js"></script>
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
-
-    // ------------------------------------------------------------------
-    // Lightbox — click any support image to view it full-size, closes via
-    // the X button, clicking the dark backdrop, or pressing Escape.
-    // ------------------------------------------------------------------
-    function openLightbox(src, alt) {
-      const lightbox = document.getElementById('lightbox');
-      document.getElementById('lightbox-image').src = src;
-      document.getElementById('lightbox-image').alt = alt || '';
-      lightbox.hidden = false;
-    }
-    function closeLightbox() {
-      document.getElementById('lightbox').hidden = true;
-    }
-    document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
-    document.getElementById('lightbox').addEventListener('click', (e) => {
-      if (e.target.id === 'lightbox') closeLightbox(); // clicking the backdrop, not the image itself
-    });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeLightbox();
-    });
 
     (async () => {
       const params = new URLSearchParams(window.location.search);
@@ -143,7 +116,7 @@
           el.src = src;
           el.alt = data.title;
           el.style.cssText = 'width:100%; aspect-ratio:1; object-fit:cover; cursor:pointer;';
-          el.addEventListener('click', () => openLightbox(src, data.title));
+          el.addEventListener('click', () => window.AgrabanLightbox.open(src, data.title));
           grid.appendChild(el);
         });
         document.getElementById('detail-support-images').style.display = 'block';

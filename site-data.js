@@ -178,16 +178,28 @@ document.addEventListener('DOMContentLoaded', async () => {
           block.id = `showcase-${ex.id}`;
 
           const exImages = (images || []).filter((img) => img.exhibition_id === ex.id);
-          const galleryHtml = exImages.length
-            ? exImages.map((img) => `<div class="tile-link"><img src="${mediaUrl(img.image_key)}" alt="${escapeHtml(ex.title)}"></div>`).join('')
-            : '<p style="color: var(--muted); font-family: var(--font-mono); font-size: 0.8rem;">No images uploaded yet.</p>';
 
           block.innerHTML = `
             <h3>${escapeHtml(ex.title)}</h3>
             <p class="showcase-desc">${escapeHtml(ex.description)}</p>
-            <div class="gallery-grid">${galleryHtml}</div>
+            <div class="gallery-grid" id="gallery-${ex.id}"></div>
           `;
           exhibitionsList.appendChild(block);
+
+          const grid = block.querySelector(`#gallery-${ex.id}`);
+          if (exImages.length) {
+            exImages.forEach((img) => {
+              const tile = document.createElement('button');
+              tile.className = 'tile-link';
+              tile.style.cssText = 'border-width:1px; cursor:pointer; padding:0;';
+              tile.innerHTML = `<img src="${mediaUrl(img.thumbnail_key || img.image_key)}" alt="${escapeHtml(ex.title)}">`;
+              tile.addEventListener('click', () => window.AgrabanLightbox?.open(mediaUrl(img.image_key), ex.title));
+              grid.appendChild(tile);
+            });
+          } else {
+            grid.innerHTML = '<p style="color: var(--muted); font-family: var(--font-mono); font-size: 0.8rem;">No images uploaded yet.</p>';
+          }
+
           window.AgrabanReveal?.observe(block);
         });
       }

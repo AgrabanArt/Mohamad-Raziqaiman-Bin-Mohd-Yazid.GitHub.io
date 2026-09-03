@@ -179,4 +179,44 @@ document.addEventListener('DOMContentLoaded', () => {
   // Exposed so site-data.js can register newly-created elements (project
   // tiles, award rows, etc.) for the same fade-in-on-scroll treatment.
   window.AgrabanReveal = { observe: observeReveal };
+
+  // ---------------------------------------------------------------------
+  // Shared lightbox — used for support images on project detail pages and
+  // exhibition showcase images. Injects its own markup into the page if
+  // it isn't already there, so no page needs to hand-write the HTML for
+  // it — just include this file and call window.AgrabanLightbox.open().
+  // ---------------------------------------------------------------------
+  function setupLightbox() {
+    if (document.getElementById('lightbox')) return; // already present on the page
+
+    const lightbox = document.createElement('div');
+    lightbox.id = 'lightbox';
+    lightbox.className = 'lightbox';
+    lightbox.hidden = true;
+    lightbox.innerHTML = `
+      <button id="lightbox-close" class="lightbox-close" aria-label="Close">&times;</button>
+      <img id="lightbox-image" src="" alt="">
+    `;
+    document.body.appendChild(lightbox);
+
+    const close = () => { lightbox.hidden = true; };
+    document.getElementById('lightbox-close').addEventListener('click', close);
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) close(); // clicking the backdrop, not the image itself
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') close();
+    });
+
+    window.AgrabanLightbox = {
+      open: (src, alt) => {
+        document.getElementById('lightbox-image').src = src;
+        document.getElementById('lightbox-image').alt = alt || '';
+        lightbox.hidden = false;
+      },
+      close,
+    };
+  }
+
+  setupLightbox();
 });

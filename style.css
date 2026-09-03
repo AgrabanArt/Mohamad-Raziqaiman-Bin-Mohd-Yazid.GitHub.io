@@ -379,6 +379,14 @@ img {
   );
 }
 
+button.tile-link {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  font: inherit;
+  color: inherit;
+}
+
 .tile-link img {
   width: 100%;
   height: 100%;

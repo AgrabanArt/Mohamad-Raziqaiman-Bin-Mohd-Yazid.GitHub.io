@@ -163,6 +163,11 @@ create table if not exists exhibition_images (
   created_at timestamptz not null default now()
 );
 
+-- thumbnail_key: a separately-cropped 4:5 version used in the showcase
+-- grid — image_key stays as the full, uncropped original, shown when a
+-- thumbnail is clicked (lightbox popup).
+alter table exhibition_images add column if not exists thumbnail_key text;
+
 -- ----------------------------------------------------------------------------
 -- MEDIA_TRASH — soft-delete log. Whenever the CMS replaces or removes a
 -- file (image, model, resume, video, etc.), the old R2 object key gets

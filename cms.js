@@ -1002,6 +1002,9 @@ async function deleteExhibition(exhibition) {
   const { data: images } = await client.from('exhibition_images').select('*').eq('exhibition_id', exhibition.id);
   for (const img of images || []) {
     await trashMedia({ storageKey: img.image_key, originalFilename: exhibition.title, sourceTable: 'exhibition_images', sourceId: img.id, sourceColumn: 'image_key' });
+    if (img.thumbnail_key) {
+      await trashMedia({ storageKey: img.thumbnail_key, originalFilename: exhibition.title, sourceTable: 'exhibition_images', sourceId: img.id, sourceColumn: 'thumbnail_key' });
+    }
   }
   await client.from('exhibitions').delete().eq('id', exhibition.id);
   refreshExhibitions();
@@ -1021,13 +1024,16 @@ async function refreshExhibitionImages(exhibitionId) {
     const row = document.createElement('div');
     row.className = 'cms-item-card';
     row.innerHTML = `
-      <img class="cms-item-thumb" src="${mediaUrl(img.image_key)}" alt="">
+      <img class="cms-item-thumb" src="${mediaUrl(img.thumbnail_key || img.image_key)}" alt="">
       <div class="cms-item-info"><p>${escapeHtml(img.image_key)}</p></div>
       <div class="cms-item-actions"><button class="cms-btn danger delete-btn">Delete</button></div>
     `;
     row.querySelector('.delete-btn').addEventListener('click', async () => {
       if (!confirm('Move this image to Trash?')) return;
       await trashMedia({ storageKey: img.image_key, originalFilename: img.image_key, sourceTable: 'exhibition_images', sourceId: img.id, sourceColumn: 'image_key' });
+      if (img.thumbnail_key) {
+        await trashMedia({ storageKey: img.thumbnail_key, originalFilename: img.image_key, sourceTable: 'exhibition_images', sourceId: img.id, sourceColumn: 'thumbnail_key' });
+      }
       await client.from('exhibition_images').delete().eq('id', img.id);
       refreshExhibitionImages(exhibitionId);
       refreshTrash();
@@ -1073,37 +1079,43 @@ function wireExhibitionForm() {
   });
 
   const EXHIBITION_CROP_STEPS = [
-    { key: 'crop', ratio: 4 / 5, dims: { width: 800, height: 1000 }, label: 'Crop Image', desc: 'Position and size the crop area — this fixed 4:5 shape matches the showcase grid.' },
+    { key: 'crop', ratio: 4 / 5, dims: { width: 800, height: 1000 }, label: 'Crop Thumbnail', desc: 'Position and size the crop area — this fixed 4:5 shape is what shows in the showcase grid. The full original image is kept separately and shown when someone clicks the thumbnail.' },
   ];
-  let pendingExhibitionImageCrop = null; // Blob, set once the crop step completes
+  let pendingExhibitionImage = null; // { original: File, thumbnailBlob: Blob }
 
   document.getElementById('exhibition-image-file').addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    pendingExhibitionImageCrop = null;
+    pendingExhibitionImage = { original: file, thumbnailBlob: null };
     openCropFlow(
       file,
       EXHIBITION_CROP_STEPS,
       (results) => {
-        pendingExhibitionImageCrop = results.crop;
+        pendingExhibitionImage.thumbnailBlob = results.crop;
       },
       () => {
+        pendingExhibitionImage = null;
         document.getElementById('exhibition-image-file').value = '';
       }
     );
   });
 
   document.getElementById('add-exhibition-image-btn').addEventListener('click', async () => {
-    if (!pendingExhibitionImageCrop || !currentExhibitionId) {
+    if (!pendingExhibitionImage || !pendingExhibitionImage.thumbnailBlob || !currentExhibitionId) {
       alert('Choose an image and finish the crop step first.');
       return;
     }
-    const croppedFile = new File([pendingExhibitionImageCrop], `crop-${Date.now()}.jpg`, { type: 'image/jpeg' });
-    const key = makeKey(`events/${currentExhibitionId}`, croppedFile);
-    await uploadFile(croppedFile, key);
-    await client.from('exhibition_images').insert({ exhibition_id: currentExhibitionId, image_key: key });
+
+    const originalKey = makeKey(`events/${currentExhibitionId}`, pendingExhibitionImage.original);
+    await uploadFile(pendingExhibitionImage.original, originalKey);
+
+    const thumbFile = new File([pendingExhibitionImage.thumbnailBlob], `thumb-${pendingExhibitionImage.original.name}`, { type: 'image/jpeg' });
+    const thumbKey = makeKey(`events/${currentExhibitionId}`, thumbFile);
+    await uploadFile(thumbFile, thumbKey);
+
+    await client.from('exhibition_images').insert({ exhibition_id: currentExhibitionId, image_key: originalKey, thumbnail_key: thumbKey });
     document.getElementById('exhibition-image-file').value = '';
-    pendingExhibitionImageCrop = null;
+    pendingExhibitionImage = null;
     refreshExhibitionImages(currentExhibitionId);
   });
 }
