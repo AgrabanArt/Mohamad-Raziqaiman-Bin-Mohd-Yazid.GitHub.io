@@ -719,6 +719,7 @@ img {
   max-width: 720px;
   white-space: pre-line;
   line-height: 1.8;
+  text-align: justify;
 }
 
 .about-cta {
@@ -819,6 +820,53 @@ img {
   font-family: var(--font-mono);
   font-size: 0.8rem;
   text-align: center;
+}
+
+/* ---------- Lightbox (project detail support images) ---------- */
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.94);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.lightbox[hidden] {
+  display: none !important;
+}
+
+.lightbox img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border: 1px solid var(--border);
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  background: rgba(10, 10, 10, 0.8);
+  color: var(--white);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.lightbox-close:hover,
+.lightbox-close:focus-visible {
+  border-color: var(--gold);
+  color: var(--gold-bright);
+  outline: none;
 }
 
 /* ---------- Footer ---------- */

@@ -504,20 +504,29 @@ async function refreshProjects(category) {
 }
 
 // ---------------------------------------------------------------------
-// CROP MODAL — shared by the 2D and 3D image uploads. When a file is
-// selected, this walks the user through TWO crops from the same source
-// image: first a fixed 4:5 crop for the gallery thumbnail, then a fixed
-// 16:9 crop for the detail page's main image. Both crops are stored and
-// uploaded separately — nothing here uses the raw original file anymore.
+// CROP MODAL — a generic, reusable crop-flow controller. Callers pass a
+// list of "steps" (each a fixed aspect ratio + output size + label), and
+// the modal walks the user through them one at a time from the same
+// source image, calling back with the results once all steps are done.
+// Used by: the 2D/3D project image upload (two steps: 4:5 thumbnail then
+// 16:9 detail-page image) and the exhibition showcase image upload (one
+// step: 4:5, matching the showcase grid).
 // ---------------------------------------------------------------------
-const pendingCrops = {}; // keyed by file input id -> { original: File, thumbnailBlob: Blob, mainBlob: Blob }
 let activeCropper = null;
-let activeCropInputId = null;
-let activeCropStep = null; // 'thumbnail' | 'main'
+let cropQueue = [];
+let cropQueueIndex = 0;
+let cropResults = {};
+let cropOnComplete = null;
+let cropOnCancel = null;
+const pendingCrops = {}; // keyed by file input id -> { original: File, thumbnailBlob: Blob, mainBlob: Blob }
 
-function openCropModal(inputId, file) {
-  activeCropInputId = inputId;
-  activeCropStep = 'thumbnail';
+function openCropFlow(file, steps, onComplete, onCancel) {
+  cropQueue = steps;
+  cropQueueIndex = 0;
+  cropResults = {};
+  cropOnComplete = onComplete;
+  cropOnCancel = onCancel;
+
   const modal = document.getElementById('crop-modal');
   const img = document.getElementById('crop-image');
   const reader = new FileReader();
@@ -533,15 +542,11 @@ function startCropStep() {
   const img = document.getElementById('crop-image');
   if (activeCropper) activeCropper.destroy();
 
-  if (activeCropStep === 'thumbnail') {
-    document.getElementById('crop-modal-title').textContent = 'Crop Thumbnail (1 of 2)';
-    document.getElementById('crop-modal-desc').textContent = 'Position and size the crop area — this fixed 4:5 shape is what shows in the gallery grid.';
-    activeCropper = new Cropper(img, { aspectRatio: 4 / 5, viewMode: 1, autoCropArea: 1 });
-  } else {
-    document.getElementById('crop-modal-title').textContent = 'Crop Main Image (2 of 2)';
-    document.getElementById('crop-modal-desc').textContent = 'Now position and size the crop area for the project detail page — this fixed 16:9 shape is what shows there.';
-    activeCropper = new Cropper(img, { aspectRatio: 16 / 9, viewMode: 1, autoCropArea: 1 });
-  }
+  const step = cropQueue[cropQueueIndex];
+  const total = cropQueue.length;
+  document.getElementById('crop-modal-title').textContent = total > 1 ? `${step.label} (${cropQueueIndex + 1} of ${total})` : step.label;
+  document.getElementById('crop-modal-desc').textContent = step.desc;
+  activeCropper = new Cropper(img, { aspectRatio: step.ratio, viewMode: 1, autoCropArea: 1 });
 }
 
 function closeCropModal() {
@@ -550,45 +555,60 @@ function closeCropModal() {
     activeCropper.destroy();
     activeCropper = null;
   }
-  activeCropInputId = null;
-  activeCropStep = null;
+  cropQueue = [];
+  cropQueueIndex = 0;
+  cropResults = {};
+  cropOnComplete = null;
+  cropOnCancel = null;
 }
 
 function wireCropModal() {
   document.getElementById('crop-confirm-btn').addEventListener('click', () => {
-    if (!activeCropper || !activeCropInputId) return;
-    const inputId = activeCropInputId;
-    const step = activeCropStep;
-    const dims = step === 'thumbnail' ? { width: 800, height: 1000 } : { width: 1920, height: 1080 };
+    if (!activeCropper || !cropQueue.length) return;
+    const step = cropQueue[cropQueueIndex];
 
-    activeCropper.getCroppedCanvas(dims).toBlob((blob) => {
-      if (step === 'thumbnail') {
-        pendingCrops[inputId].thumbnailBlob = blob;
-        activeCropStep = 'main';
-        startCropStep(); // move straight into the second crop, same modal
+    activeCropper.getCroppedCanvas(step.dims).toBlob((blob) => {
+      cropResults[step.key] = blob;
+      cropQueueIndex++;
+      if (cropQueueIndex < cropQueue.length) {
+        startCropStep(); // move straight into the next step, same modal
       } else {
-        pendingCrops[inputId].mainBlob = blob;
+        const results = cropResults;
+        const onComplete = cropOnComplete;
         closeCropModal();
+        onComplete(results);
       }
     }, 'image/jpeg', 0.9);
   });
 
   document.getElementById('crop-cancel-btn').addEventListener('click', () => {
-    // COMMENT: cancelling at any point clears the pending selection for
-    // this field entirely — the user can re-choose the file to try again.
-    if (activeCropInputId) {
-      delete pendingCrops[activeCropInputId];
-      document.getElementById(activeCropInputId).value = '';
-    }
+    const onCancel = cropOnCancel;
     closeCropModal();
+    if (onCancel) onCancel();
   });
+
+  const PROJECT_CROP_STEPS = [
+    { key: 'thumbnail', ratio: 4 / 5, dims: { width: 800, height: 1000 }, label: 'Crop Thumbnail', desc: 'Position and size the crop area — this fixed 4:5 shape is what shows in the gallery grid.' },
+    { key: 'main', ratio: 16 / 9, dims: { width: 1920, height: 1080 }, label: 'Crop Main Image', desc: "Now position and size the crop area for the project detail page — this fixed 16:9 shape is what shows there." },
+  ];
 
   ['form-2d-file', 'form-3d-file'].forEach((inputId) => {
     document.getElementById(inputId).addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
       pendingCrops[inputId] = { original: file, thumbnailBlob: null, mainBlob: null };
-      openCropModal(inputId, file);
+      openCropFlow(
+        file,
+        PROJECT_CROP_STEPS,
+        (results) => {
+          pendingCrops[inputId].thumbnailBlob = results.thumbnail;
+          pendingCrops[inputId].mainBlob = results.main;
+        },
+        () => {
+          delete pendingCrops[inputId];
+          document.getElementById(inputId).value = '';
+        }
+      );
     });
   });
 }
@@ -1052,13 +1072,38 @@ function wireExhibitionForm() {
     }
   });
 
+  const EXHIBITION_CROP_STEPS = [
+    { key: 'crop', ratio: 4 / 5, dims: { width: 800, height: 1000 }, label: 'Crop Image', desc: 'Position and size the crop area — this fixed 4:5 shape matches the showcase grid.' },
+  ];
+  let pendingExhibitionImageCrop = null; // Blob, set once the crop step completes
+
+  document.getElementById('exhibition-image-file').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    pendingExhibitionImageCrop = null;
+    openCropFlow(
+      file,
+      EXHIBITION_CROP_STEPS,
+      (results) => {
+        pendingExhibitionImageCrop = results.crop;
+      },
+      () => {
+        document.getElementById('exhibition-image-file').value = '';
+      }
+    );
+  });
+
   document.getElementById('add-exhibition-image-btn').addEventListener('click', async () => {
-    const fileInput = document.getElementById('exhibition-image-file');
-    if (!fileInput.files[0] || !currentExhibitionId) return;
-    const key = makeKey(`events/${currentExhibitionId}`, fileInput.files[0]);
-    await uploadFile(fileInput.files[0], key);
+    if (!pendingExhibitionImageCrop || !currentExhibitionId) {
+      alert('Choose an image and finish the crop step first.');
+      return;
+    }
+    const croppedFile = new File([pendingExhibitionImageCrop], `crop-${Date.now()}.jpg`, { type: 'image/jpeg' });
+    const key = makeKey(`events/${currentExhibitionId}`, croppedFile);
+    await uploadFile(croppedFile, key);
     await client.from('exhibition_images').insert({ exhibition_id: currentExhibitionId, image_key: key });
-    fileInput.value = '';
+    document.getElementById('exhibition-image-file').value = '';
+    pendingExhibitionImageCrop = null;
     refreshExhibitionImages(currentExhibitionId);
   });
 }
