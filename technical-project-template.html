@@ -3,10 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Project — AgrabanArt</title>
+  <title>Technical Project — AgrabanArt</title>
   <!-- COMMENT: favicon — add favicon.png (or .ico) to the site root, then this picks it up automatically -->
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="stylesheet" href="style.css">
+  <style>
+    .tech-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-top: 1.25rem;
+    }
+    .tech-tag {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.03em;
+      color: var(--gold);
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.85rem;
+      border-radius: 2px;
+    }
+    .detail-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+  </style>
 </head>
 <body>
 
@@ -16,8 +41,8 @@
     <ul class="nav-links">
       <li><a href="index.html">Home</a></li>
       <li><a href="about.html">About Me</a></li>
-      <li><a href="projects.html" class="is-active">Projects</a></li>
-      <li><a href="technical.html">Technical Projects</a></li>
+      <li><a href="projects.html">Projects</a></li>
+      <li><a href="technical.html" class="is-active">Technical Projects</a></li>
       <li><a href="commission.html">Commission</a></li>
       <li><a href="events.html">Events &amp; Achievements</a></li>
       <li><a href="contact.html">Contact</a></li>
@@ -27,6 +52,7 @@
   <header class="detail-hero">
     <p class="eyebrow reveal" id="detail-category">Loading&hellip;</p>
     <h1 class="reveal" id="detail-title" style="font-family: var(--font-display); font-size: clamp(2.5rem, 7vw, 4.5rem); margin: 0.5rem 0 0;"></h1>
+    <div class="tech-tags reveal" id="detail-tech-tags"></div>
   </header>
 
   <div class="wrap">
@@ -35,19 +61,12 @@
     </div>
 
     <div class="detail-body reveal">
-      <h2>About this piece</h2>
+      <h2>About this project</h2>
       <p id="detail-description"></p>
 
-      <div id="detail-support-images" style="display: none; margin-top: 2rem;">
-        <h2>More Views</h2>
-        <div id="detail-support-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;"></div>
-      </div>
+      <div class="detail-links" id="detail-links"></div>
 
-      <div id="detail-linkedin-section" style="display: none; margin-top: 2rem;">
-        <a id="detail-linkedin-link" href="#" target="_blank" rel="noopener" class="btn">View on ArtStation</a>
-      </div>
-
-      <a href="projects.html" class="back-link">&larr; Back to Projects</a>
+      <a href="technical.html" class="back-link">&larr; Back to Technical Projects</a>
     </div>
   </div>
 
@@ -65,16 +84,16 @@
     (async () => {
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
-      const categoryLabels = { '2d': '2D Illustration', '3d': '3D Modelling', animation: 'Animation' };
+      const categoryLabels = { web: 'Web Development', infra: 'Systems & Infrastructure', software: 'Software Development' };
 
       if (!id) {
         document.getElementById('detail-title').textContent = 'No project selected';
-        document.getElementById('detail-media').textContent = 'Go back to Projects and click a piece to view it here.';
+        document.getElementById('detail-media').textContent = 'Go back to Technical Projects and click a piece to view it here.';
         return;
       }
 
       const client = window.supabase.createClient(AGRABAN_CONFIG.SUPABASE_URL, AGRABAN_CONFIG.SUPABASE_ANON_KEY);
-      const { data, error } = await client.from('projects').select('*').eq('id', id).single();
+      const { data, error } = await client.from('technical_projects').select('*').eq('id', id).single();
 
       if (error || !data) {
         document.getElementById('detail-title').textContent = 'Project not found';
@@ -86,16 +105,19 @@
       document.getElementById('detail-title').textContent = data.title;
       document.getElementById('detail-description').textContent = data.description;
 
+      // Tech stack tags — comma-separated free text
+      if (data.tech_stack) {
+        const tagsWrap = document.getElementById('detail-tech-tags');
+        data.tech_stack.split(',').map((t) => t.trim()).filter(Boolean).forEach((tag) => {
+          const span = document.createElement('span');
+          span.className = 'tech-tag';
+          span.textContent = tag;
+          tagsWrap.appendChild(span);
+        });
+      }
+
       const mediaEl = document.getElementById('detail-media');
-      if (data.category === 'animation' && data.youtube_id) {
-        mediaEl.textContent = '';
-        mediaEl.style.padding = '0';
-        const iframe = document.createElement('iframe');
-        iframe.src = `https://www.youtube-nocookie.com/embed/${data.youtube_id}`;
-        iframe.style.cssText = 'width:100%; height:100%; border:0;';
-        iframe.allowFullscreen = true;
-        mediaEl.appendChild(iframe);
-      } else if (data.image_key) {
+      if (data.image_key) {
         mediaEl.textContent = '';
         mediaEl.style.padding = '0';
         const img = document.createElement('img');
@@ -107,26 +129,25 @@
         mediaEl.textContent = 'No media uploaded for this project yet.';
       }
 
-      // Support images (up to 3) — only relevant for 2D/3D pieces
-      const { data: supportImages } = await client.from('project_images').select('*').eq('project_id', id).order('sort_order');
-      if (supportImages && supportImages.length) {
-        const grid = document.getElementById('detail-support-grid');
-        supportImages.forEach((img) => {
-          const src = `${AGRABAN_CONFIG.MEDIA_PUBLIC_BASE_URL}/${img.image_key}`;
-          const el = document.createElement('img');
-          el.src = src;
-          el.alt = data.title;
-          el.style.cssText = 'width:100%; aspect-ratio:1; object-fit:cover; cursor:pointer;';
-          el.addEventListener('click', () => window.AgrabanLightbox.open(src, data.title));
-          grid.appendChild(el);
-        });
-        document.getElementById('detail-support-images').style.display = 'block';
+      // Live site / GitHub links
+      const linksWrap = document.getElementById('detail-links');
+      if (data.live_url) {
+        const a = document.createElement('a');
+        a.href = data.live_url;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.className = 'btn';
+        a.textContent = 'View Live';
+        linksWrap.appendChild(a);
       }
-
-      // LinkedIn link section
-      if (data.linkedin_url) {
-        document.getElementById('detail-linkedin-link').href = data.linkedin_url;
-        document.getElementById('detail-linkedin-section').style.display = 'block';
+      if (data.github_url) {
+        const a = document.createElement('a');
+        a.href = data.github_url;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.className = 'btn btn-quiet';
+        a.textContent = 'View on GitHub';
+        linksWrap.appendChild(a);
       }
     })();
   </script>

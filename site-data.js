@@ -260,6 +260,67 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ------------------------------------------------------------------
+  // TECHNICAL PROJECTS PAGE
+  // ------------------------------------------------------------------
+  const galleryWeb = document.getElementById('gallery-web');
+  const galleryInfra = document.getElementById('gallery-infra');
+  const gallerySoftware = document.getElementById('gallery-software');
+
+  if (galleryWeb || galleryInfra || gallerySoftware) {
+    const { data: techProjects, error: techErr } = await client
+      .from('technical_projects')
+      .select('*')
+      .order('sort_order', { ascending: true });
+
+    if (techErr) {
+      console.error('AgrabanArt: failed to load technical projects', techErr);
+    } else {
+      const buildTechTile = (project) => {
+        const a = document.createElement('a');
+        a.className = 'tile-link';
+        a.href = `technical-project-template.html?id=${project.id}`;
+
+        const mediaBox = document.createElement('div');
+        const thumbSrc = project.thumbnail_key || project.image_key;
+        if (thumbSrc) {
+          const img = document.createElement('img');
+          img.src = mediaUrl(thumbSrc);
+          img.alt = project.title;
+          mediaBox.appendChild(img);
+        } else {
+          mediaBox.className = 'tile-placeholder-label';
+          mediaBox.textContent = 'No image uploaded yet';
+        }
+
+        const caption = document.createElement('div');
+        caption.className = 'tile-caption';
+        caption.innerHTML = `<p class="tile-title">${escapeHtml(project.title)}</p><p>${escapeHtml(project.description)}</p>`;
+
+        a.appendChild(mediaBox);
+        a.appendChild(caption);
+        return a;
+      };
+
+      const byCat = (cat) => (techProjects || []).filter((p) => p.category === cat);
+      const fillGallery = (grid, cat) => {
+        if (!grid) return;
+        const items = byCat(cat);
+        if (!items.length) return;
+        grid.innerHTML = '';
+        items.forEach((p) => {
+          const tile = buildTechTile(p);
+          grid.appendChild(tile);
+          window.AgrabanReveal?.observe(tile);
+        });
+      };
+
+      fillGallery(galleryWeb, 'web');
+      fillGallery(galleryInfra, 'infra');
+      fillGallery(gallerySoftware, 'software');
+    }
+  }
+
+  // ------------------------------------------------------------------
   // COMMISSION PAGE — simple scrolling image list
   // ------------------------------------------------------------------
   const commissionGallery = document.getElementById('commission-gallery');

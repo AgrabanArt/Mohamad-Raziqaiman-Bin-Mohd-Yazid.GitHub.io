@@ -3,16 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Events &amp; Achievements — AgrabanArt</title>
+  <title>Technical Projects — AgrabanArt</title>
   <!-- COMMENT: favicon — add favicon.png (or .ico) to the site root, then this picks it up automatically -->
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="stylesheet" href="style.css">
   <style>
-    .achieve-section {
+    .techproj-section {
       padding: 5rem 0 6rem;
     }
-    .section-awards { background: var(--black-soft); }
-    .section-exhibitions { background: var(--surface); }
+    .section-web { background: var(--black-soft); }
+    .section-infra { background: var(--surface); }
+    .section-software { background: var(--black-soft); }
 
     .section-head {
       display: flex;
@@ -45,10 +46,11 @@
 
   <!--
     ============================================================
-    COMMENT: This page pulls Awards and Exhibitions & Competitions content
-    live from Supabase via site-data.js. The two sections below start out
-    empty in the page source and are filled in by JavaScript. Manage all
-    of this from cms.html instead of hand-editing this file.
+    COMMENT: This page pulls its content live from Supabase via
+    site-data.js — the gallery-grid divs below start out EMPTY in the
+    actual page source and get filled in by JavaScript after fetching.
+    No item cap on any of the three categories. Manage all of this from
+    cms.html (Technical Projects tab) instead of hand-editing this file.
     ============================================================
   -->
 
@@ -59,47 +61,70 @@
       <li><a href="index.html">Home</a></li>
       <li><a href="about.html">About Me</a></li>
       <li><a href="projects.html">Projects</a></li>
-      <li><a href="technical.html">Technical Projects</a></li>
+      <li><a href="technical.html" class="is-active">Technical Projects</a></li>
       <li><a href="commission.html">Commission</a></li>
-      <li><a href="events.html" class="is-active">Events &amp; Achievements</a></li>
+      <li><a href="events.html">Events &amp; Achievements</a></li>
       <li><a href="contact.html">Contact</a></li>
     </ul>
   </nav>
 
   <header style="padding: 9rem 2rem 2rem; text-align: center;">
-    <p class="eyebrow reveal">Recognition</p>
-    <h1 class="reveal" style="font-family: var(--font-display); font-size: clamp(2.75rem, 8vw, 5rem); margin: 0.5rem 0 0;">Events &amp; Achievements</h1>
+    <p class="eyebrow reveal">Selected Work</p>
+    <h1 class="reveal" style="font-family: var(--font-display); font-size: clamp(2.75rem, 8vw, 5rem); margin: 0.5rem 0 0;">Technical Projects</h1>
   </header>
 
+  <!-- Sticky sub-nav: click to jump to a section, active tab highlights on scroll -->
   <nav class="subnav">
     <ul class="subnav-list">
-      <li><a href="#section-awards">Awards</a></li>
-      <li><a href="#section-exhibitions">Exhibitions &amp; Competitions</a></li>
+      <li><a href="#section-web">Web Development</a></li>
+      <li><a href="#section-infra">Systems &amp; Infrastructure</a></li>
+      <li><a href="#section-software">Software Development</a></li>
     </ul>
   </nav>
 
-  <section id="section-awards" class="achieve-section section-awards">
+  <!-- =========================== WEB DEVELOPMENT =========================== -->
+  <section id="section-web" class="techproj-section section-web">
     <div class="wrap reveal">
       <div class="section-head">
         <span class="eyebrow">01</span>
-        <h2>Awards</h2>
+        <h2>Web Development</h2>
       </div>
-      <div id="awards-list">
-        <p style="color: var(--muted); font-family: var(--font-mono); font-size: 0.85rem;">Nothing added yet — add awards from the CMS.</p>
+
+      <!-- Filled in by site-data.js — managed from the CMS -->
+      <div class="gallery-grid" id="gallery-web">
+        <p style="color: var(--muted); font-family: var(--font-mono); font-size: 0.85rem;">Nothing added yet — add projects from the CMS.</p>
       </div>
     </div>
   </section>
 
   <div class="slash-divider"></div>
 
-  <section id="section-exhibitions" class="achieve-section section-exhibitions">
+  <!-- =========================== SYSTEMS & INFRASTRUCTURE =========================== -->
+  <section id="section-infra" class="techproj-section section-infra">
     <div class="wrap reveal">
       <div class="section-head">
         <span class="eyebrow">02</span>
-        <h2>Exhibitions &amp; Competitions</h2>
+        <h2>Systems &amp; Infrastructure</h2>
       </div>
-      <div id="exhibitions-list">
-        <p style="color: var(--muted); font-family: var(--font-mono); font-size: 0.85rem;">Nothing added yet — add exhibitions from the CMS.</p>
+
+      <div class="gallery-grid" id="gallery-infra">
+        <p style="color: var(--muted); font-family: var(--font-mono); font-size: 0.85rem;">Nothing added yet — add projects from the CMS.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="slash-divider"></div>
+
+  <!-- =========================== SOFTWARE DEVELOPMENT =========================== -->
+  <section id="section-software" class="techproj-section section-software">
+    <div class="wrap reveal">
+      <div class="section-head">
+        <span class="eyebrow">03</span>
+        <h2>Software Development</h2>
+      </div>
+
+      <div class="gallery-grid" id="gallery-software">
+        <p style="color: var(--muted); font-family: var(--font-mono); font-size: 0.85rem;">Nothing added yet — add projects from the CMS.</p>
       </div>
     </div>
   </section>

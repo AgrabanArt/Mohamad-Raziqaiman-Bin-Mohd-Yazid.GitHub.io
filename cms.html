@@ -92,6 +92,7 @@
       <button class="cms-nav-btn is-active" data-panel="panel-home">Home</button>
       <button class="cms-nav-btn" data-panel="panel-about">About Me</button>
       <button class="cms-nav-btn" data-panel="panel-projects">Projects</button>
+      <button class="cms-nav-btn" data-panel="panel-technical">Technical Projects</button>
       <button class="cms-nav-btn" data-panel="panel-commission">Commission</button>
       <button class="cms-nav-btn" data-panel="panel-events">Events &amp; Achievements</button>
       <button class="cms-nav-btn" data-panel="panel-contact">Contact</button>
@@ -266,6 +267,93 @@
               <button class="cms-btn" id="cancel-anim-btn">Cancel</button>
             </div>
             <p class="cms-status" id="status-anim"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TECHNICAL PROJECTS PANEL ==================== -->
+      <section class="cms-panel" id="panel-technical">
+        <h2>Technical Projects</h2>
+        <p class="cms-empty-note">Manage the Web Development, Systems &amp; Infrastructure, and Software Development sections. No item cap.</p>
+
+        <div class="cms-subtabs">
+          <button class="cms-subtab-btn is-active" data-sub="sub-web">Web Development</button>
+          <button class="cms-subtab-btn" data-sub="sub-infra">Systems &amp; Infrastructure</button>
+          <button class="cms-subtab-btn" data-sub="sub-software">Software Development</button>
+        </div>
+
+        <!-- Web Development -->
+        <div class="cms-subpanel is-active" id="sub-web">
+          <div id="list-web"></div>
+          <button class="cms-btn primary" id="add-web-btn">+ Add Project</button>
+          <div class="cms-form" id="form-web" hidden>
+            <h3 id="form-web-title">Add Project</h3>
+            <input type="hidden" id="form-web-id">
+            <div class="form-field"><label>Title</label><input type="text" id="form-web-name"></div>
+            <div class="form-field"><label>Description</label><textarea id="form-web-desc"></textarea></div>
+            <div class="form-field"><label>Tech stack (comma-separated)</label><input type="text" id="form-web-tech" placeholder="React, Node.js, PostgreSQL"></div>
+            <div class="form-field"><label>Live site / demo link (optional)</label><input type="url" id="form-web-live" placeholder="https://..."></div>
+            <div class="form-field"><label>GitHub link (optional)</label><input type="url" id="form-web-github" placeholder="https://github.com/..."></div>
+            <div class="form-field">
+              <label>Image file</label>
+              <input type="file" id="form-web-file" accept="image/*">
+              <p class="cms-limit-note" style="margin: 0.4rem 0 0;">You'll be asked to crop this twice after selecting it: once for the gallery thumbnail (4:5), then once for the detail page's main image (16:9).</p>
+            </div>
+            <div class="cms-form-actions">
+              <button class="cms-btn primary" id="save-web-btn">Save</button>
+              <button class="cms-btn" id="cancel-web-btn">Cancel</button>
+            </div>
+            <p class="cms-status" id="status-web"></p>
+          </div>
+        </div>
+
+        <!-- Systems & Infrastructure -->
+        <div class="cms-subpanel" id="sub-infra">
+          <div id="list-infra"></div>
+          <button class="cms-btn primary" id="add-infra-btn">+ Add Project</button>
+          <div class="cms-form" id="form-infra" hidden>
+            <h3 id="form-infra-title">Add Project</h3>
+            <input type="hidden" id="form-infra-id">
+            <div class="form-field"><label>Title</label><input type="text" id="form-infra-name"></div>
+            <div class="form-field"><label>Description</label><textarea id="form-infra-desc"></textarea></div>
+            <div class="form-field"><label>Tech stack (comma-separated)</label><input type="text" id="form-infra-tech" placeholder="Docker, AWS, Terraform"></div>
+            <div class="form-field"><label>Live site / demo link (optional)</label><input type="url" id="form-infra-live" placeholder="https://..."></div>
+            <div class="form-field"><label>GitHub link (optional)</label><input type="url" id="form-infra-github" placeholder="https://github.com/..."></div>
+            <div class="form-field">
+              <label>Image file</label>
+              <input type="file" id="form-infra-file" accept="image/*">
+              <p class="cms-limit-note" style="margin: 0.4rem 0 0;">You'll be asked to crop this twice after selecting it: once for the gallery thumbnail (4:5), then once for the detail page's main image (16:9).</p>
+            </div>
+            <div class="cms-form-actions">
+              <button class="cms-btn primary" id="save-infra-btn">Save</button>
+              <button class="cms-btn" id="cancel-infra-btn">Cancel</button>
+            </div>
+            <p class="cms-status" id="status-infra"></p>
+          </div>
+        </div>
+
+        <!-- Software Development -->
+        <div class="cms-subpanel" id="sub-software">
+          <div id="list-software"></div>
+          <button class="cms-btn primary" id="add-software-btn">+ Add Project</button>
+          <div class="cms-form" id="form-software" hidden>
+            <h3 id="form-software-title">Add Project</h3>
+            <input type="hidden" id="form-software-id">
+            <div class="form-field"><label>Title</label><input type="text" id="form-software-name"></div>
+            <div class="form-field"><label>Description</label><textarea id="form-software-desc"></textarea></div>
+            <div class="form-field"><label>Tech stack (comma-separated)</label><input type="text" id="form-software-tech" placeholder="Python, TensorFlow"></div>
+            <div class="form-field"><label>Live site / demo link (optional)</label><input type="url" id="form-software-live" placeholder="https://..."></div>
+            <div class="form-field"><label>GitHub link (optional)</label><input type="url" id="form-software-github" placeholder="https://github.com/..."></div>
+            <div class="form-field">
+              <label>Image file</label>
+              <input type="file" id="form-software-file" accept="image/*">
+              <p class="cms-limit-note" style="margin: 0.4rem 0 0;">You'll be asked to crop this twice after selecting it: once for the gallery thumbnail (4:5), then once for the detail page's main image (16:9).</p>
+            </div>
+            <div class="cms-form-actions">
+              <button class="cms-btn primary" id="save-software-btn">Save</button>
+              <button class="cms-btn" id="cancel-software-btn">Cancel</button>
+            </div>
+            <p class="cms-status" id="status-software"></p>
           </div>
         </div>
       </section>

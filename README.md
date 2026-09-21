@@ -10,7 +10,9 @@ portfolio-site/
 ├── index.html               Home — looping background video + tagline (CMS-editable)
 ├── about.html                About Me — Background / Education / Technical Skills / Soft Skills (CMS-editable)
 ├── projects.html            2D Illustrations / 3D Modelling / Animation Showreel (live data, 6-item cap each)
-├── project-template.html    Dynamic detail page — reads ?id= and fetches from Supabase
+├── project-template.html    Dynamic detail page for art projects — reads ?id= and fetches from Supabase
+├── technical.html            Web Development / Systems & Infrastructure / Software Development (live data, no cap)
+├── technical-project-template.html   Dynamic detail page for technical projects — reads ?id= and fetches from Supabase
 ├── commission.html            Simple scrolling image list (CMS-managed)
 ├── events.html               Awards / Exhibitions & Competitions (live data)
 ├── contact.html              Photo, link buttons, resume/CV download (all CMS-editable)
@@ -87,6 +89,7 @@ Open `cms.html` and log in with the admin email/password from step 1.3.
 - **Projects tab** — three sub-tabs, **each capped at 6 items**: 2D Illustrations, 3D Modelling (still image + optional `.glb`/`.gltf`), Animation Showreel (YouTube link, no file upload).
   - For 2D/3D pieces: uploading an image walks you through **two crops** from the source image — first the gallery thumbnail (4:5), then the detail page's main image (16:9).
   - Each 2D/3D piece can also have up to 3 "support images" (added after the first save) shown on its detail page, and an optional ArtStation post link shown as a button at the bottom of that page.
+- **Technical Projects tab** — three sub-tabs, **no item cap**: Web Development, Systems & Infrastructure, Software Development. Each entry has a title, description, a comma-separated tech-stack field (rendered as tags on the detail page), and optional Live Site and GitHub links. Image upload uses the same two-crop flow (4:5 thumbnail, 16:9 detail image) as art Projects.
 - **Commission tab** — a simple add/edit/delete list of images (caption optional), shown as a scrolling gallery on the Commission page. No item cap.
 - **Events & Achievements tab** — Awards (title, description, year, optional link to a related exhibition) and Exhibitions & Competitions (title, description, image gallery).
 - **Contact tab** — upload your Resume and/or CV (PDF) and set the download button's label; clicking that button on the live site downloads whichever of the two files are set. Also manage the row of link buttons (label + URL) — use `mailto:you@example.com` as the URL for an email button.

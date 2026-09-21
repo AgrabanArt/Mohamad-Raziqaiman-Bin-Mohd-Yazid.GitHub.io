@@ -86,6 +86,9 @@ function initDashboard() {
   refreshProjects('2d');
   refreshProjects('3d');
   refreshProjects('animation');
+  refreshTechProjects('web');
+  refreshTechProjects('infra');
+  refreshTechProjects('software');
   refreshAwards();
   refreshExhibitions();
   refreshCommissionImages();
@@ -95,6 +98,7 @@ function initDashboard() {
   wireHomeForm();
   wireAboutForm();
   wireProjectForms();
+  wireTechProjectForms();
   wireAwardForm();
   wireExhibitionForm();
   wireCommissionForm();
@@ -592,7 +596,7 @@ function wireCropModal() {
     { key: 'main', ratio: 16 / 9, dims: { width: 1920, height: 1080 }, label: 'Crop Main Image', desc: "Now position and size the crop area for the project detail page — this fixed 16:9 shape is what shows there." },
   ];
 
-  ['form-2d-file', 'form-3d-file'].forEach((inputId) => {
+  ['form-2d-file', 'form-3d-file', 'form-web-file', 'form-infra-file', 'form-software-file'].forEach((inputId) => {
     document.getElementById(inputId).addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -848,6 +852,152 @@ function wireSupportImages() {
       refreshProjectImages(suffix, projectId);
     });
   });
+}
+
+// ==========================================================================
+// TECHNICAL PROJECTS — Web Development / Systems & Infrastructure /
+// Software Development. Same two-step crop as art Projects, plus
+// tech-stack tags and live/GitHub links. No item cap.
+// ==========================================================================
+
+const TECH_CATEGORY_LABELS = { web: 'Web Development', infra: 'Systems & Infrastructure', software: 'Software Development' };
+
+async function refreshTechProjects(category) {
+  const { data, error } = await client.from('technical_projects').select('*').eq('category', category).order('sort_order');
+  if (error) {
+    console.error(error);
+    return;
+  }
+  const container = document.getElementById(`list-${category}`);
+  container.innerHTML = '';
+  if (!data.length) {
+    container.innerHTML = '<p class="cms-empty-note">Nothing added yet.</p>';
+    return;
+  }
+  data.forEach((project) => {
+    const row = document.createElement('div');
+    row.className = 'cms-item-card';
+    const thumbHtml = project.thumbnail_key || project.image_key
+      ? `<img class="cms-item-thumb" src="${mediaUrl(project.thumbnail_key || project.image_key)}" alt="">`
+      : `<div class="cms-item-thumb"></div>`;
+    row.innerHTML = `
+      ${thumbHtml}
+      <div class="cms-item-info">
+        <h4>${escapeHtml(project.title)}</h4>
+        <p>${escapeHtml(project.description)}</p>
+      </div>
+      <div class="cms-item-actions">
+        <button class="cms-btn edit-btn">Edit</button>
+        <button class="cms-btn danger delete-btn">Delete</button>
+      </div>
+    `;
+    row.querySelector('.edit-btn').addEventListener('click', () => openTechProjectForm(category, project));
+    row.querySelector('.delete-btn').addEventListener('click', () => deleteTechProject(category, project));
+    container.appendChild(row);
+  });
+}
+
+function openTechProjectForm(category, project) {
+  document.getElementById(`form-${category}`).hidden = false;
+  document.getElementById(`form-${category}-title`).textContent = project ? `Edit ${project.title}` : 'Add Project';
+  document.getElementById(`form-${category}-id`).value = project ? project.id : '';
+  document.getElementById(`form-${category}-name`).value = project ? project.title : '';
+  document.getElementById(`form-${category}-desc`).value = project ? project.description : '';
+  document.getElementById(`form-${category}-tech`).value = project ? project.tech_stack : '';
+  document.getElementById(`form-${category}-live`).value = project ? project.live_url || '' : '';
+  document.getElementById(`form-${category}-github`).value = project ? project.github_url || '' : '';
+  document.getElementById(`status-${category}`).textContent = '';
+
+  const fileInputId = `form-${category}-file`;
+  document.getElementById(fileInputId).value = '';
+  delete pendingCrops[fileInputId];
+
+  document.getElementById(`form-${category}`)._editingProject = project || null;
+}
+
+function closeTechProjectForm(category) {
+  document.getElementById(`form-${category}`).hidden = true;
+}
+
+async function deleteTechProject(category, project) {
+  if (!confirm(`Delete "${project.title}"? Its media will be moved to Trash.`)) return;
+  if (project.image_key) {
+    await trashMedia({ storageKey: project.image_key, originalFilename: project.title, sourceTable: 'technical_projects', sourceId: project.id, sourceColumn: 'image_key' });
+  }
+  if (project.thumbnail_key) {
+    await trashMedia({ storageKey: project.thumbnail_key, originalFilename: project.title, sourceTable: 'technical_projects', sourceId: project.id, sourceColumn: 'thumbnail_key' });
+  }
+  await client.from('technical_projects').delete().eq('id', project.id);
+  refreshTechProjects(category);
+  refreshTrash();
+}
+
+function wireTechProjectForms() {
+  ['web', 'infra', 'software'].forEach((category) => {
+    document.getElementById(`add-${category}-btn`).addEventListener('click', () => openTechProjectForm(category, null));
+    document.getElementById(`cancel-${category}-btn`).addEventListener('click', () => closeTechProjectForm(category));
+    document.getElementById(`save-${category}-btn`).addEventListener('click', () => saveTechProjectForm(category));
+  });
+}
+
+async function saveTechProjectForm(category) {
+  const statusEl = document.getElementById(`status-${category}`);
+  statusEl.className = 'cms-status';
+  statusEl.textContent = 'Saving…';
+
+  try {
+    const id = document.getElementById(`form-${category}-id`).value || null;
+    const existing = document.getElementById(`form-${category}`)._editingProject;
+    const title = document.getElementById(`form-${category}-name`).value.trim() || 'Untitled Project';
+
+    const payload = {
+      category,
+      title,
+      description: document.getElementById(`form-${category}-desc`).value.trim(),
+      tech_stack: document.getElementById(`form-${category}-tech`).value.trim(),
+      live_url: document.getElementById(`form-${category}-live`).value.trim() || null,
+      github_url: document.getElementById(`form-${category}-github`).value.trim() || null,
+    };
+
+    const fileInputId = `form-${category}-file`;
+    const pending = pendingCrops[fileInputId];
+    if (pending && pending.original) {
+      if (!pending.thumbnailBlob || !pending.mainBlob) {
+        throw new Error('Finish both crop steps before saving (or cancel and reselect the image).');
+      }
+
+      const mainFile = new File([pending.mainBlob], `main-${pending.original.name}`, { type: 'image/jpeg' });
+      const mainKey = makeKey(`technical/${category}`, mainFile);
+      await uploadFile(mainFile, mainKey);
+      if (existing && existing.image_key) {
+        await trashMedia({ storageKey: existing.image_key, originalFilename: title, sourceTable: 'technical_projects', sourceId: id, sourceColumn: 'image_key' });
+      }
+      payload.image_key = mainKey;
+
+      const thumbFile = new File([pending.thumbnailBlob], `thumb-${pending.original.name}`, { type: 'image/jpeg' });
+      const thumbKey = makeKey(`technical/${category}`, thumbFile);
+      await uploadFile(thumbFile, thumbKey);
+      if (existing && existing.thumbnail_key) {
+        await trashMedia({ storageKey: existing.thumbnail_key, originalFilename: title, sourceTable: 'technical_projects', sourceId: id, sourceColumn: 'thumbnail_key' });
+      }
+      payload.thumbnail_key = thumbKey;
+    }
+
+    const { error } = id
+      ? await client.from('technical_projects').update(payload).eq('id', id)
+      : await client.from('technical_projects').insert(payload);
+    if (error) throw error;
+
+    delete pendingCrops[fileInputId];
+    statusEl.textContent = 'Saved.';
+    statusEl.className = 'cms-status success';
+    refreshTechProjects(category);
+    refreshTrash();
+    setTimeout(() => closeTechProjectForm(category), 600);
+  } catch (err) {
+    statusEl.textContent = err.message;
+    statusEl.className = 'cms-status error';
+  }
 }
 
 // ==========================================================================
@@ -1352,6 +1502,9 @@ async function restoreFromTrash(item) {
   refreshProjects('2d');
   refreshProjects('3d');
   refreshProjects('animation');
+  refreshTechProjects('web');
+  refreshTechProjects('infra');
+  refreshTechProjects('software');
   refreshExhibitions();
   refreshCommissionImages();
   refreshResumeDocs();

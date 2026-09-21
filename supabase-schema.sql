@@ -395,6 +395,40 @@ drop policy if exists "admin write resume_documents" on resume_documents;
 create policy "admin write resume_documents" on resume_documents for all
   using (is_admin()) with check (is_admin());
 
+-- ----------------------------------------------------------------------------
+-- TECHNICAL_PROJECTS — the Technical Projects page: Web Development,
+-- Systems & Infrastructure, Software Development.
+--   category      'web' | 'infra' | 'software'
+--   thumbnail_key  cropped 4:5 image for the gallery tile
+--   image_key       full, uncropped original — used at 16:9 on the detail page
+--   tech_stack       free text, e.g. "React, Node.js, PostgreSQL"
+--   live_url          optional link to a live site/demo
+--   github_url        optional link to the repo
+-- No item cap — unlike the art Projects page, there's no fixed limit here.
+-- ----------------------------------------------------------------------------
+create table if not exists technical_projects (
+  id uuid primary key default gen_random_uuid(),
+  category text not null check (category in ('web', 'infra', 'software')),
+  title text not null default 'Untitled Project',
+  description text not null default '',
+  tech_stack text not null default '',
+  thumbnail_key text,
+  image_key text,
+  live_url text,
+  github_url text,
+  sort_order int not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table technical_projects enable row level security;
+
+drop policy if exists "public read technical_projects" on technical_projects;
+create policy "public read technical_projects" on technical_projects for select using (true);
+
+drop policy if exists "admin write technical_projects" on technical_projects;
+create policy "admin write technical_projects" on technical_projects for all
+  using (is_admin()) with check (is_admin());
+
 -- media_trash and admins tables: admin-only, no public access at all
 drop policy if exists "admin only media_trash" on media_trash;
 create policy "admin only media_trash" on media_trash for all
