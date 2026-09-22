@@ -483,6 +483,10 @@ button.tile-link {
   color: var(--muted);
 }
 
+.detail-body p {
+  text-align: justify;
+}
+
 .detail-body h2 {
   font-family: var(--font-display);
   color: var(--white);

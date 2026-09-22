@@ -429,6 +429,27 @@ drop policy if exists "admin write technical_projects" on technical_projects;
 create policy "admin write technical_projects" on technical_projects for all
   using (is_admin()) with check (is_admin());
 
+-- ----------------------------------------------------------------------------
+-- TECHNICAL_PROJECT_IMAGES — up to 3 extra "support" images shown on a
+-- technical project's detail page. Mirrors project_images (used by the art
+-- Projects page) but references technical_projects instead.
+-- ----------------------------------------------------------------------------
+create table if not exists technical_project_images (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references technical_projects (id) on delete cascade,
+  image_key text not null,
+  sort_order int not null default 0,
+  created_at timestamptz not null default now()
+);
+alter table technical_project_images enable row level security;
+
+drop policy if exists "public read technical_project_images" on technical_project_images;
+create policy "public read technical_project_images" on technical_project_images for select using (true);
+
+drop policy if exists "admin write technical_project_images" on technical_project_images;
+create policy "admin write technical_project_images" on technical_project_images for all
+  using (is_admin()) with check (is_admin());
+
 -- media_trash and admins tables: admin-only, no public access at all
 drop policy if exists "admin only media_trash" on media_trash;
 create policy "admin only media_trash" on media_trash for all

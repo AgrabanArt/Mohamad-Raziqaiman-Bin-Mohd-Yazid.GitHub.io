@@ -64,6 +64,11 @@
       <h2>About this project</h2>
       <p id="detail-description"></p>
 
+      <div id="detail-support-images" style="display: none; margin-top: 2rem;">
+        <h2>More Views</h2>
+        <div id="detail-support-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;"></div>
+      </div>
+
       <div class="detail-links" id="detail-links"></div>
 
       <a href="technical.html" class="back-link">&larr; Back to Technical Projects</a>
@@ -127,6 +132,22 @@
         mediaEl.appendChild(img);
       } else {
         mediaEl.textContent = 'No media uploaded for this project yet.';
+      }
+
+      // Support images (up to 3)
+      const { data: supportImages } = await client.from('technical_project_images').select('*').eq('project_id', id).order('sort_order');
+      if (supportImages && supportImages.length) {
+        const grid = document.getElementById('detail-support-grid');
+        supportImages.forEach((img) => {
+          const src = `${AGRABAN_CONFIG.MEDIA_PUBLIC_BASE_URL}/${img.image_key}`;
+          const el = document.createElement('img');
+          el.src = src;
+          el.alt = data.title;
+          el.style.cssText = 'width:100%; aspect-ratio:1; object-fit:cover; cursor:pointer;';
+          el.addEventListener('click', () => window.AgrabanLightbox.open(src, data.title));
+          grid.appendChild(el);
+        });
+        document.getElementById('detail-support-images').style.display = 'block';
       }
 
       // Live site / GitHub links

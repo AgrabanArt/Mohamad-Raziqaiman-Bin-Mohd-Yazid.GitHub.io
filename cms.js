@@ -99,6 +99,7 @@ function initDashboard() {
   wireAboutForm();
   wireProjectForms();
   wireTechProjectForms();
+  wireTechSupportImages();
   wireAwardForm();
   wireExhibitionForm();
   wireCommissionForm();
@@ -855,6 +856,66 @@ function wireSupportImages() {
 }
 
 // ==========================================================================
+// TECHNICAL PROJECTS — support images (same pattern as art project support
+// images, but backed by technical_project_images)
+// ==========================================================================
+
+async function refreshTechProjectImages(category, projectId) {
+  const { data } = await client.from('technical_project_images').select('*').eq('project_id', projectId).order('sort_order');
+  const list = document.getElementById(`list-images-${category}`);
+  const note = document.getElementById(`limit-images-${category}-note`);
+  const addBtn = document.getElementById(`add-support-${category}-btn`);
+  list.innerHTML = '';
+
+  const count = (data || []).length;
+  note.textContent = `${count} of 3 used`;
+  addBtn.disabled = count >= 3;
+  addBtn.style.opacity = count >= 3 ? 0.4 : 1;
+
+  if (!count) {
+    list.innerHTML = '<p class="cms-empty-note">No support images yet.</p>';
+    return;
+  }
+  data.forEach((img) => {
+    const row = document.createElement('div');
+    row.className = 'cms-item-card';
+    row.innerHTML = `
+      <img class="cms-item-thumb" src="${mediaUrl(img.image_key)}" alt="">
+      <div class="cms-item-info"><p>${escapeHtml(img.image_key)}</p></div>
+      <div class="cms-item-actions"><button class="cms-btn danger delete-btn">Delete</button></div>
+    `;
+    row.querySelector('.delete-btn').addEventListener('click', async () => {
+      if (!confirm('Move this image to Trash?')) return;
+      await trashMedia({ storageKey: img.image_key, originalFilename: img.image_key, sourceTable: 'technical_project_images', sourceId: img.id, sourceColumn: 'image_key' });
+      await client.from('technical_project_images').delete().eq('id', img.id);
+      refreshTechProjectImages(category, projectId);
+      refreshTrash();
+    });
+    list.appendChild(row);
+  });
+}
+
+function wireTechSupportImages() {
+  ['web', 'infra', 'software'].forEach((category) => {
+    document.getElementById(`add-support-${category}-btn`).addEventListener('click', async () => {
+      const projectId = document.getElementById(`form-${category}-id`).value;
+      const fileInput = document.getElementById(`form-${category}-support-file`);
+      if (!fileInput.files[0] || !projectId) return;
+      const { count } = await client.from('technical_project_images').select('*', { count: 'exact', head: true }).eq('project_id', projectId);
+      if (count >= 3) {
+        alert('Maximum of 3 support images reached — delete one to add another.');
+        return;
+      }
+      const key = makeKey(`technical/${category}/support`, fileInput.files[0]);
+      await uploadFile(fileInput.files[0], key);
+      await client.from('technical_project_images').insert({ project_id: projectId, image_key: key });
+      fileInput.value = '';
+      refreshTechProjectImages(category, projectId);
+    });
+  });
+}
+
+// ==========================================================================
 // TECHNICAL PROJECTS — Web Development / Systems & Infrastructure /
 // Software Development. Same two-step crop as art Projects, plus
 // tech-stack tags and live/GitHub links. No item cap.
@@ -912,6 +973,14 @@ function openTechProjectForm(category, project) {
   document.getElementById(fileInputId).value = '';
   delete pendingCrops[fileInputId];
 
+  const imagesSection = document.getElementById(`images-${category}-section`);
+  if (project) {
+    imagesSection.hidden = false;
+    refreshTechProjectImages(category, project.id);
+  } else {
+    imagesSection.hidden = true; // save the project first, then support images can be added
+  }
+
   document.getElementById(`form-${category}`)._editingProject = project || null;
 }
 
@@ -926,6 +995,10 @@ async function deleteTechProject(category, project) {
   }
   if (project.thumbnail_key) {
     await trashMedia({ storageKey: project.thumbnail_key, originalFilename: project.title, sourceTable: 'technical_projects', sourceId: project.id, sourceColumn: 'thumbnail_key' });
+  }
+  const { data: supportImages } = await client.from('technical_project_images').select('*').eq('project_id', project.id);
+  for (const img of supportImages || []) {
+    await trashMedia({ storageKey: img.image_key, originalFilename: project.title, sourceTable: 'technical_project_images', sourceId: img.id, sourceColumn: 'image_key' });
   }
   await client.from('technical_projects').delete().eq('id', project.id);
   refreshTechProjects(category);
@@ -983,17 +1056,22 @@ async function saveTechProjectForm(category) {
       payload.thumbnail_key = thumbKey;
     }
 
-    const { error } = id
-      ? await client.from('technical_projects').update(payload).eq('id', id)
-      : await client.from('technical_projects').insert(payload);
+    const { data: savedRow, error } = id
+      ? await client.from('technical_projects').update(payload).eq('id', id).select().single()
+      : await client.from('technical_projects').insert(payload).select().single();
     if (error) throw error;
 
     delete pendingCrops[fileInputId];
     statusEl.textContent = 'Saved.';
     statusEl.className = 'cms-status success';
+    document.getElementById(`form-${category}-id`).value = savedRow.id;
     refreshTechProjects(category);
     refreshTrash();
-    setTimeout(() => closeTechProjectForm(category), 600);
+
+    // Keep the form open so support images can be added right after the
+    // first save, instead of auto-closing like before.
+    document.getElementById(`images-${category}-section`).hidden = false;
+    refreshTechProjectImages(category, savedRow.id);
   } catch (err) {
     statusEl.textContent = err.message;
     statusEl.className = 'cms-status error';
