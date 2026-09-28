@@ -1,83 +1,556 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AgrabanArt — Digital Portfolio</title>
-  <!-- COMMENT: favicon — add favicon.png (or .ico) to the site root, then this picks it up automatically -->
-  <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TMB Studio — Game Development</title>
+    <meta
+      name="description"
+      content="TMB Studio — an indie game development studio crafting horror experiences rooted in Malaysian folklore."
+    />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <!-- ================================================================
+     NAVIGATION
+     ================================================================ -->
+    <nav id="navbar" role="navigation" aria-label="Main navigation">
+      <a href="#home" class="nav-logo">
+        <img
+          src="./assets/logo/logo-transparent white.png"
+          alt="tmb-logo"
+          height="75"
+        />
+      </a>
 
-  <!--
-    ============================================================
-    COMMENT: The background video and the tagline paragraph below are now
-    live-editable from cms.html (Home tab). They start out showing this
-    fallback content and get swapped by site-data.js once it fetches from
-    Supabase. The portrait photo and full name are still hand-edited here
-    directly (search "COMMENT" below to find them).
-    ============================================================
-  -->
+      <button class="nav-toggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
 
-  <nav class="site-nav">
-    <a href="index.html" class="brand">AGRABAN<span>ART</span></a>
-    <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
-    <ul class="nav-links">
-      <li><a href="index.html" class="is-active">Home</a></li>
-      <li><a href="about.html">About Me</a></li>
-      <li><a href="projects.html">Projects</a></li>
-      <li><a href="technical.html">Technical Projects</a></li>
-      <li><a href="commission.html">Commission</a></li>
-      <li><a href="events.html">Events &amp; Achievements</a></li>
-      <li><a href="contact.html">Contact</a></li>
-    </ul>
-  </nav>
+      <ul class="nav-links">
+        <li><a href="#home">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li class="nav-item nav-has-dropdown">
+          <a href="#projects">Projects</a>
 
-  <header class="hero">
-    <!-- Filled in by site-data.js once a video is uploaded via the CMS -->
-    <video class="hero-bg-video" id="hero-bg-video" autoplay muted loop playsinline style="display:none;"></video>
-    <div class="hero-overlay"></div>
+          <div class="nav-dropdown">
+            <a href="./ngilai.html">Ngilai</a>
+            <a href="./lifegacha.html">Life Gacha!</a>
+          </div>
+        </li>
+        <li><a href="#team">Team</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
 
-    <div class="hero-content">
-      <!-- COMMENT: replace this div with <img class="hero-portrait" src="media/portrait.jpg" alt="Your name"> -->
-      <img class="hero-portrait reveal" src="media\img\profile_img.png" alt="Your name">
+    <!-- ================================================================
+     HOME / HERO
+     ================================================================ -->
+    <section id="home">
+      <div class="hero-video-wrap reveal">
+        <div class="hero-corner tl"></div>
+        <div class="hero-corner tr"></div>
+        <div class="hero-corner bl"></div>
+        <div class="hero-corner br"></div>
 
-      <p class="eyebrow reveal" style="margin-bottom: 1rem;">2D Illustrations &middot; 3D Modelling  &middot; Animation</p>
+        <!--
+      ════════════════════════════════════════════
+      OPTION A — YouTube embed (autoplay, muted)
+      Replace VIDEO_ID with your YouTube video ID.
+      The video ID is the part after ?v= in the URL.
+      e.g. youtube.com/watch?v=dQw4w9WgXcQ → id is dQw4w9WgXcQ
 
-      <h1 class="reveal" style="font-family: var(--font-display); font-size: clamp(3.5rem, 12vw, 8rem); line-height: 0.95; letter-spacing: 0.02em; margin: 0;">
-        AGRABAN<span style="color: var(--gold);">ART</span>
-      </h1>
+      <iframe
+        id="heroVideo"
+        width="100%" height="100%"
+        src="https://www.youtube.com/embed/VIDEO_ID?autoplay=1&mute=1&loop=1&playlist=VIDEO_ID&controls=0"
+        frameborder="0"
+        allow="autoplay; fullscreen"
+        allowfullscreen>
+      </iframe>
 
-      <!-- COMMENT: replace with your preferred display name / tagline if you want something other than the full legal name below -->
-      <p class="reveal" style="font-family: var(--font-mono); color: var(--muted); font-size: 0.9rem; letter-spacing: 0.05em; margin-top: 1rem;">
-        Mohamad Raziqaiman Bin Mohd Yazid
-      </p>
+      NOTE: YouTube iframes can't be un-muted by JS, so remove the mute button
+      if using this option — or link to the full YouTube video below the embed.
+      ════════════════════════════════════════════
 
-      <!-- CMS-editable tagline — falls back to this text until Supabase has a saved value -->
-      <p class="reveal" id="hero-tagline" style="max-width: 480px; color: var(--muted); margin: 1.75rem 0 2.5rem;">
-        Bringing imagined worlds to life through characters, creatures and visual storytelling
-      </p>
+      OPTION B — Local/hosted video file (recommended for autoplay + unmute control)
+      Upload your video file to your project folder as assets/trailer.mp4
+      then replace the placeholder below with:
 
-      <div class="reveal" style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
-        <a href="projects.html" class="btn">View Projects</a>
-        <a href="contact.html" class="btn btn-quiet">Get in Touch</a>
+      <video id="heroVideo" class="hero-video" autoplay muted loop playsinline>
+        <source src="./assets/trailer.mp4" type="video/mp4">
+      </video>
+      <button class="video-mute-btn" id="muteBtn" onclick="toggleMute()">🔇 Unmute</button>
+      ════════════════════════════════════════════
+    -->
+
+        <div class="hero-video-placeholder">
+          <video
+            id="heroVideo"
+            class="hero-video"
+            autoplay
+            muted
+            loop
+            playsinline
+          >
+            <source
+              data-cms-src="home.heroVideo"
+              src="./assets/ngilai/ngilai trailer.mp4"
+              type="video/mp4"
+            />
+          </video>
+        </div>
       </div>
-    </div>
-  </header>
 
-  <footer class="site-footer">
-    <span class="brand" style="display:inline-block;">AGRABAN<span style="color: var(--gold);">ART</span></span>
-    <p>&copy; <span id="year"></span> Mohamad Raziqaiman Bin Mohd Yazid. All artwork rights reserved.</p>
-  </footer>
+      <div class="hero-tagline reveal">
+        <span class="ornament">— ✦ —</span>
+        <p data-cms-text="home.heroTagline">
+          A Malaysian indie studio creating games, 3D animation, and motion
+          graphics that bring ideas to life.
+        </p>
+      </div>
+    </section>
 
-  <!-- COMMENT: Supabase client library — used by site-data.js to fetch the live video/tagline -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script src="config.js"></script>
-  <script src="script.js"></script>
-  <script src="site-data.js"></script>
-  <script>
-    document.getElementById('year').textContent = new Date().getFullYear();
-  </script>
-</body>
+    <!-- ================================================================
+     ABOUT
+     ================================================================ -->
+    <section id="about">
+      <div class="about-grid">
+        <div class="reveal">
+          <div class="carousel-wrap">
+            <div class="carousel-track" id="aboutCarouselTrack">
+              <!-- Slides rendered dynamically from content.json — see
+                   the script near the bottom of the page. -->
+            </div>
+            <button
+              class="carousel-btn prev"
+              id="aboutPrev"
+              aria-label="Previous"
+            >
+              &#8592;
+            </button>
+            <button class="carousel-btn next" id="aboutNext" aria-label="Next">
+              &#8594;
+            </button>
+          </div>
+          <div class="carousel-dots" id="aboutDots"></div>
+        </div>
+
+        <div class="about-text reveal">
+          <span class="section-label">Who We Are</span>
+          <h2 data-cms-text="home.aboutTitle">Bringing Local to Global</h2>
+          <hr class="divider" style="margin: 1.5rem 0" />
+          <p data-cms-text="home.aboutParagraphs.0">
+            TMB Studio is a Malaysian indie game and animation studio dedicated
+            to creating immersive experiences through game development, 3D
+            animation, and motion graphics.
+          </p>
+          <p data-cms-text="home.aboutParagraphs.1">
+            Inspired by the myths, folklore, and untold stories of Southeast
+            Asia, we transform cultural heritage into modern interactive
+            experiences that entertain, inspire, and leave a lasting impression.
+          </p>
+          <p data-cms-text="home.aboutParagraphs.2">
+            Driven by creativity and a passion for storytelling, we continue to
+            explore new ideas, refine our craft, and share our journey as we
+            build original worlds for players and audiences around the globe.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+        PROJECTS — Featured single project
+        ================================================================ -->
+    <section id="projects">
+      <div class="inner">
+        <div class="section-header reveal">
+          <span class="section-label">Our Work</span>
+          <h2>Projects</h2>
+          <span class="ornament">— ✦ —</span>
+        </div>
+
+        <!-- PEEK CAROUSEL -->
+        <div class="peek-carousel-outer">
+          <button
+            class="peek-arrow peek-arrow-side prev"
+            id="peekPrev"
+            aria-label="Previous project"
+          >
+            &#8592;
+          </button>
+          <div class="peek-carousel-track" id="peekTrack">
+            <!-- Cards rendered dynamically from Supabase — see the
+                 script at the bottom of the page. -->
+          </div>
+          <!-- /peek-carousel-track -->
+          <button class="peek-arrow peek-arrow-side next" id="peekNext" aria-label="Next project">
+            &#8594;
+          </button>
+        </div>
+        <!-- /peek-carousel-outer -->
+
+        <!-- Dots below the carousel -->
+        <div class="peek-carousel-controls">
+          <div class="peek-dots" id="peekDots"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+     TEAM
+     ================================================================ -->
+    <section id="team">
+      <div class="section-header reveal">
+        <span class="section-label">The People</span>
+        <h2>Meet the Team</h2>
+        <span class="ornament">— ✦ —</span>
+      </div>
+
+      <div class="team-grid" id="teamGrid">
+        <!-- Cards rendered dynamically from Supabase — see the
+             script near the bottom of the page. -->
+      </div>
+    </section>
+
+    <!-- ================================================================
+     MARQUEE — Software & Tools
+     ================================================================ -->
+    <section id="marquee-section">
+      <div class="section-header reveal">
+        <span class="section-label">The Tools</span>
+        <h2>Tools and Software We Use</h2>
+        <span class="ornament">— ✦ —</span>
+      </div>
+      
+
+      <div class="marquee-track-wrap">
+        <div class="marquee-track">
+          <div class="marquee-item">
+            <img
+              src="./assets/software logo/unreal_engine_logo_white.png"
+              alt="Unreal Engine"
+            />
+            <span class="marquee-item-name">Unreal Engine</span>
+          </div>
+          <div class="marquee-item">
+            <img src="./assets/software logo/blender_logo.png" alt="Blender" />
+            <span class="marquee-item-name">Blender</span>
+          </div>
+          <div class="marquee-item">
+            <img src="./assets/software logo/bandlab_logo.png" alt="Bandlab" />
+            <span class="marquee-item-name">Bandlab</span>
+          </div>
+          <div class="marquee-item">
+            <img
+              src="./assets/software logo/photoshop_logo.png"
+              alt="Photoshop"
+            />
+            <Photoshop class="marquee-item-name">Adobe Photoshop</span>
+          </div>
+          <div class="marquee-item">
+            <img
+              src="./assets/software logo/illustrator_logo.png"
+              alt="Illustrator"
+            />
+            <span class="marquee-item-name">Adobe Illustrator</span>
+          </div>
+          <div class="marquee-item">
+            <img
+              src="./assets/software logo/substance_3d_painter_logo.png"
+              alt="Substance 3D Painter"
+            />
+            <span class="marquee-item-name">Adobe Substance 3D Painter</span>
+          </div>
+          <div class="marquee-item">
+            <img src="./assets/software logo/filmora_logo.png" alt="Filmora" />
+            <span class="marquee-item-name">Filmora</span>
+          </div>
+          <div class="marquee-item">
+            <img src="./assets/software logo/capcut_logo.png" alt="Capcut" />
+            <span class="marquee-item-name">Capcut</span>
+          </div>
+          <div class="marquee-item">
+            <img
+              src="./assets/software logo/clipstudiopaint_logo.png"
+              alt="Clip Studio Paint"
+            />
+            <span class="marquee-item-name">Clip Studio Paint</span>
+          </div>
+          <div class="marquee-item">
+            <img
+              src="./assets/software logo/premiere_pro_logo.png"
+              alt="Premiere Pro"
+            />
+            <span class="marquee-item-name">Premiere Pro</span>
+          </div>
+
+          <div class="marquee-item">
+            <img
+              src="./assets/software logo/unreal_engine_logo_white.png"
+              alt="Unreal Engine"
+            />
+            <span class="marquee-item-name">Unreal Engine</span>
+          </div>
+          <div class="marquee-item">
+            <img src="./assets/software logo/blender_logo.png" alt="Blender" />
+            <span class="marquee-item-name">Blender</span>
+          </div>
+          <div class="marquee-item">
+            <img src="./assets/software logo/bandlab_logo.png" alt="Bandlab" />
+            <span class="marquee-item-name">Bandlab</span>
+          </div>
+          <div class="marquee-item">
+            <img
+              src="./assets/software logo/photoshop_logo.png"
+              alt="Photoshop"
+            />
+            <span class="marquee-item-name">Adobe Photoshop</span>
+          </div>
+          <div class="marquee-item">
+            <img
+              src="./assets/software logo/illustrator_logo.png"
+              alt="Illustrator"
+            />
+            <span class="marquee-item-name">Adobe Illustrator</span>
+          </div>
+          <div class="marquee-item">
+            <img
+              src="./assets/software logo/substance_3d_painter_logo.png"
+              alt="Substance 3D Painter"
+            />
+            <span class="marquee-item-name">Adobe Substance 3D Painter</span>
+          </div>
+          <div class="marquee-item">
+            <img src="./assets/software logo/filmora_logo.png" alt="Filmora" />
+            <span class="marquee-item-name">Filmora</span>
+          </div>
+          <div class="marquee-item">
+            <img src="./assets/software logo/capcut_logo.png" alt="Capcut" />
+            <span class="marquee-item-name">Capcut</span>
+          </div>
+          <div class="marquee-item">
+            <img
+              src="./assets/software logo/clipstudiopaint_logo.png"
+              alt="Clip Studio Paint"
+            />
+            <span class="marquee-item-name">Clip Studio Paint</span>
+          </div>
+          <div class="marquee-item">
+            <img
+              src="./assets/software logo/premiere_pro_logo.png"
+              alt="Premiere Pro"
+            />
+            <span class="marquee-item-name">Premiere Pro</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+     CONTACT
+     ================================================================ -->
+    <section id="contact">
+      <div class="inner">
+        <div class="section-header reveal">
+          <span class="section-label">Reach Us</span>
+          <h2>Contact & Socials</h2>
+          <span class="ornament">— ✦ —</span>
+          <p
+            style="
+              color: var(--grey-muted);
+              max-width: 500px;
+              margin: 0.75rem auto 0;
+              font-size: 1rem;
+            "
+          >
+            Follow our journey, send us a message, or just come say hello.
+          </p>
+        </div>
+
+        <div class="contact-links reveal">
+          <a
+            href="https://www.instagram.com/tmb.studio25?igsh=cXI2MnQwdGozYjlt"
+            class="contact-link-item"
+            ><span class="icon"><img
+              src="./assets/software logo/instagram_logo.png"
+              alt="Instagram" class="contact-icon"
+            /></span><span>Instagram</span></a
+          >
+          <a
+            href="https://www.linkedin.com/in/tmb-studio"
+            class="contact-link-item"
+            ><span class="icon"><img
+              src="./assets/software logo/linkedin_logo.png"
+              alt="LinkedIn" class="contact-icon"
+            /></span><span>LinkedIn</span></a
+          >
+          <a
+            href="https://www.tiktok.com/@tmb.studio25?_r=1&_t=ZS-97YAaf9Zfrs"
+            class="contact-link-item"
+            ><span class="icon"><img
+              src="./assets/software logo/tiktok_logo.png"
+              alt="Tiktok" class="contact-icon" 
+            /></span><span>TikTok</span></a
+          >
+          <a href="mailto:tmbstudio25@gmail.com" class="contact-link-item"
+            ><span class="icon"><img
+              src="./assets/software logo/email_logo.png"
+              alt="Email" class="contact-icon"
+            /></span><span>tmbstudio25@gmail.com</span></a
+          >
+          <a href="#" class="contact-link-item"
+            ><span class="icon"><img
+              src="./assets/software logo/itch_io_logo.png"
+              alt="Itchio" class="contact-icon"
+            /></span><span>itch.io (TBA)</span></a
+          >
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+     FOOTER
+     ================================================================ -->
+    <footer>
+      <p>© 2026 TMB Studio · Malaysia · All Rights Reserved</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="./site-data.js"></script>
+    <script src="./cms.js"></script>
+    <script src="./main.js"></script>
+
+    <!-- Render the Projects carousel from Supabase and populate the
+         Projects nav dropdown, then start the carousel once cards exist. -->
+    <script>
+      (async function () {
+        const track = document.getElementById("peekTrack");
+        const projects = await window.TMB_DATA.fetchProjects();
+
+        window.TMB_DATA.populateNavDropdowns(projects);
+
+        projects.forEach((p, i) => {
+          const card = document.createElement("a");
+          card.className = "peek-card" + (i === 0 ? " active" : "");
+          card.dataset.index = i;
+          card.href = `./project.html?slug=${encodeURIComponent(p.slug)}`;
+
+          const media = document.createElement("div");
+          media.className = "peek-card-media";
+          if (p.card_media_type === "video" && p.card_media_url) {
+            const video = document.createElement("video");
+            video.autoplay = true;
+            video.muted = true;
+            video.loop = true;
+            video.playsInline = true;
+            const source = document.createElement("source");
+            source.src = p.card_media_url;
+            source.type = "video/mp4";
+            video.appendChild(source);
+            media.appendChild(video);
+          } else if (p.card_media_url) {
+            const img = document.createElement("img");
+            img.src = p.card_media_url;
+            img.alt = p.title || "";
+            media.appendChild(img);
+          }
+          const tag = document.createElement("span");
+          tag.className = "peek-card-tag";
+          tag.textContent = window.TMB_DATA.statusLabel(p).replace(/^●\s*/, "");
+          media.appendChild(tag);
+          card.appendChild(media);
+
+          const body = document.createElement("div");
+          body.className = "peek-card-body";
+          body.innerHTML = `
+            <h3>${p.title || ""}</h3>
+            <p>${(p.description || [])[0] || ""}</p>
+            <div class="peek-card-footer">
+              <div class="peek-card-meta">
+                <div><span>Genre</span> ${p.genre || ""}</div>
+                <div><span>Platform</span> ${p.platform || ""}</div>
+              </div>
+              <span class="btn-project">Learn More &nbsp;&#8594;</span>
+            </div>
+          `;
+          card.appendChild(body);
+
+          track.appendChild(card);
+        });
+
+        if (projects.length) initPeekCarousel();
+      })();
+    </script>
+
+    <!-- Render the Who We Are carousel slides from content.json once
+         cms.js has loaded them, then start the carousel. -->
+    <script>
+      document.addEventListener("tmb-content-applied", (e) => {
+        const images = (e.detail && e.detail.home && e.detail.home.aboutImages) || [];
+        const track = document.getElementById("aboutCarouselTrack");
+        if (!track) return;
+        track.innerHTML = "";
+        images.forEach((img) => {
+          const slide = document.createElement("div");
+          slide.className = "carousel-slide";
+          const imgEl = document.createElement("img");
+          imgEl.src = typeof img === "string" ? img : img.url;
+          imgEl.alt = "";
+          slide.appendChild(imgEl);
+          track.appendChild(slide);
+        });
+        initCarousel({
+          trackSelector: "#aboutCarouselTrack",
+          dotsSelector: "#aboutDots",
+          prevBtn: "#aboutPrev",
+          nextBtn: "#aboutNext",
+          slideCount: images.length,
+        });
+      });
+    </script>
+
+    <!-- Render the team grid from Supabase -->
+    <script>
+      (async function () {
+        const grid = document.getElementById("teamGrid");
+        if (!grid) return;
+        const members = await window.TMB_DATA.fetchTeamMembers();
+        members.forEach((m) => {
+          const card = document.createElement("div");
+          card.className = "team-card reveal visible";
+
+          const avatar = document.createElement("div");
+          avatar.className = "team-avatar";
+          const img = document.createElement("img");
+          img.src = m.photo_url || "./assets/cms-placeholder-bg.svg";
+          img.alt = m.name || "";
+          avatar.appendChild(img);
+          card.appendChild(avatar);
+
+          const h3 = document.createElement("h3");
+          h3.textContent = m.name || "";
+          card.appendChild(h3);
+
+          const role = document.createElement("p");
+          role.className = "team-role";
+          role.innerHTML = m.role || "";
+          card.appendChild(role);
+
+          grid.appendChild(card);
+        });
+      })();
+    </script>
+
+    <!-- Mute toggle function for local video (Option B) -->
+    <script>
+      function toggleMute() {
+        const video = document.getElementById("heroVideo");
+        const btn = document.getElementById("muteBtn");
+        if (!video) return;
+        video.muted = !video.muted;
+        btn.textContent = video.muted ? "🔇 Unmute" : "🔊 Mute";
+      }
+    </script>
+  </body>
 </html>
